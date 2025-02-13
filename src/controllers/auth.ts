@@ -109,4 +109,22 @@ const reset_password = async (req: Request, res: Response) => {
   }
 };
 
-export { signup, verify_otp, forgot_password, reset_password };
+const login = async (req: Request, res: Response) => {
+  const { email, password } = req?.body || {};
+
+  const error = validateRequiredFields({ email, password });
+  if (error) {
+    res.status(400).json({ message: error });
+    return;
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    res.status(400).json({ message: "User not found" });
+    return;
+  }
+
+  res.status(200).json({ message: "Login successful" });
+};
+
+export { signup, verify_otp, forgot_password, reset_password, login };

@@ -29,4 +29,21 @@ const verifyPasswordResetToken = (token: string) => {
   return decoded;
 };
 
-export { generatePasswordResetToken, verifyPasswordResetToken };
+const generateAccessToken = (email: string, role: string) => {
+  return sign({ email, role, purpose: "accessToken" }, ACCESS_TOKEN_SECRET, {
+    expiresIn: "2m",
+  });
+};
+
+const generateRefreshToken = (email: string, role: string) => {
+  return sign({ email, role, purpose: "refreshToken" }, REFRESH_TOKEN_SECRET, {
+    expiresIn: "1d",
+  });
+};
+
+export {
+  generatePasswordResetToken,
+  verifyPasswordResetToken,
+  generateAccessToken,
+  generateRefreshToken,
+};
