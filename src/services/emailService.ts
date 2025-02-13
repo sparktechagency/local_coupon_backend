@@ -1,4 +1,7 @@
+import { config } from "dotenv";
 import nodemailer from "nodemailer";
+
+config();
 
 interface EmailOptions {
   to: string;

@@ -20,26 +20,29 @@ const User = new Schema(
       type: String,
       required: true,
     },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
 
-const OTP = new Schema(
-  {
-    otp: {
-      type: String,
-      required: true,
-    },
-    type: {
-      type: String,
-      enum: ["signup", "login", "forgotPassword"],
-      required: true,
-    },
+const OTP = new Schema({
+  otp: {
+    type: String,
+    required: true,
   },
-  {
-    timestamps: true,
+  type: {
+    type: String,
+    enum: ["signup", "login", "forgotPassword"],
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
     expires: 60 * 5, // 5 minutes
-  }
-);
+  },
+});
 
 export { User, OTP };
