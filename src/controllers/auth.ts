@@ -12,6 +12,7 @@ import {
   verifyRefreshToken,
 } from "@utils/jwt";
 import { OAuth2Client } from "google-auth-library";
+import axios from "axios";
 
 const signup = async (req: Request, res: Response) => {
   const { name, email, phone, password } = req?.body || {};
@@ -229,9 +230,48 @@ const google_login = async (req: Request, res: Response) => {
 };
 
 const facebook_login = async (req: Request, res: Response) => {
-  const { email } = req?.body || {};
+  const { accessToken: fbAccessToken } = req?.body || {};
 
-  const user = await User.findOne({ email });
+  if (!fbAccessToken) {
+    res.status(400).json({ message: "Facebook access token not found" });
+    return;
+  }
+
+  const response = await axios.get(
+    `https://graph.facebook.com/v20.0/me?fields=id,name,email,picture&access_token=${fbAccessToken}`
+  );
+
+  const { id, name, email, picture } = response.data;
+
+  let user = await User.findOne({ email });
+
+  if (user) {
+    if (!user.emailVerified) {
+      await User.updateOne({ email }, { $set: { emailVerified: true } });
+    }
+
+    if (!user.providers?.facebook) {
+      await User.updateOne(
+        { email },
+        { $set: { providers: { ...user.providers, facebook: id } } }
+      );
+    }
+  } else {
+    user = await User.create({
+      email,
+      name,
+      picture: picture?.data?.url,
+      providers: { facebook: id },
+      emailVerified: true,
+    });
+  }
+
+  const accessToken = generateAccessToken(user.email, user.role);
+  const refreshToken = generateRefreshToken(user.email, user.role, true);
+
+  res
+    .status(200)
+    .json({ message: "Login successful", accessToken, refreshToken });
 };
 
 export {
