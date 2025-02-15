@@ -9,6 +9,7 @@ import {
   generatePasswordResetToken,
   generateRefreshToken,
   verifyPasswordResetToken,
+  verifyRefreshToken,
 } from "@utils/jwt";
 
 const signup = async (req: Request, res: Response) => {
@@ -140,4 +141,38 @@ const login = async (req: Request, res: Response) => {
     .json({ message: "Login successful", accessToken, refreshToken });
 };
 
-export { signup, verify_otp, forgot_password, reset_password, login };
+const refresh_token = async (req: Request, res: Response) => {
+  const refreshToken = req.headers.authorization?.split(" ")[1];
+
+  if (!refreshToken) {
+    res.status(400).json({ message: "Refresh token not found" });
+    return;
+  }
+
+  try {
+    const decoded = verifyRefreshToken(refreshToken);
+    const user = await User.findOne({ email: decoded.email });
+    if (!user) {
+      res.status(400).json({ message: "User not found" });
+      return;
+    }
+    const accessToken = generateAccessToken(user.email, user.role);
+    res.status(200).json({
+      message: "Token refreshed",
+      accessToken,
+    });
+    return;
+  } catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+    return;
+  }
+};
+
+export {
+  signup,
+  verify_otp,
+  forgot_password,
+  reset_password,
+  login,
+  refresh_token,
+};

@@ -49,9 +49,25 @@ const generateRefreshToken = (
   );
 };
 
+interface RefreshTokenPayload {
+  email: string;
+  role: string;
+  purpose: string;
+  remember_me: boolean;
+}
+
+const verifyRefreshToken = (token: string) => {
+  const decoded = verify(token, REFRESH_TOKEN_SECRET) as RefreshTokenPayload;
+  if (decoded.purpose !== "refreshToken") {
+    throw new Error("Invalid token");
+  }
+  return decoded;
+};
+
 export {
   generatePasswordResetToken,
   verifyPasswordResetToken,
   generateAccessToken,
   generateRefreshToken,
+  verifyRefreshToken,
 };
