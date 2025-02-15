@@ -3,6 +3,8 @@ import { AccessTokenPayload } from "@utils/jwt";
 import { User } from "src/db";
 import parseDate from "@utils/parseDate";
 import uploadService from "@services/uploadService";
+import { comparePassword, plainPasswordToHash } from "@utils/passwordHashing";
+import validateRequiredFields from "@utils/validateFields";
 
 interface AuthenticatedRequest extends Request {
   user?: AccessTokenPayload;
@@ -95,4 +97,52 @@ const delete_profile = async (req: AuthenticatedRequest, res: Response) => {
   res.status(200).json({ message: "Profile deleted successfully" });
 };
 
-export { get_profile, update_profile, update_picture, delete_profile };
+const change_password = async (req: AuthenticatedRequest, res: Response) => {
+  const { oldPassword, newPassword } = req.body;
+
+  const error = validateRequiredFields({ oldPassword, newPassword });
+  if (error) {
+    res.status(400).json({ message: error });
+    return;
+  }
+
+  if (oldPassword === newPassword) {
+    res
+      .status(400)
+      .json({ message: "New password cannot be the same as the old password" });
+    return;
+  }
+
+  const user = await User.findById(req.user?.id);
+  if (!user || user.isDeleted) {
+    res.status(404).json({ message: "User not found" });
+    return;
+  }
+
+  if (!user.passwordHash) {
+    user.passwordHash = await plainPasswordToHash(newPassword);
+    await user.save();
+    res.status(200).json({ message: "Password set successfully" });
+    return;
+  }
+
+  const isPasswordCorrect = await comparePassword(
+    oldPassword,
+    user.passwordHash
+  );
+  if (!isPasswordCorrect) {
+    res.status(400).json({ message: "Incorrect old password" });
+    return;
+  }
+  user.passwordHash = await plainPasswordToHash(newPassword);
+  await user.save();
+  res.status(200).json({ message: "Password changed successfully" });
+};
+
+export {
+  get_profile,
+  update_profile,
+  update_picture,
+  delete_profile,
+  change_password,
+};
