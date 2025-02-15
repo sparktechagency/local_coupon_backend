@@ -8,6 +8,7 @@ import {
   login,
   google_login,
   refresh_token,
+  apple_login,
 } from "@controllers/auth";
 
 const router = Router();
@@ -20,5 +21,6 @@ router.post("/login", login);
 router.post("/refresh-token", refresh_token);
 router.post("/google-login", google_login);
 router.post("/facebook-login", facebook_login);
+router.post("/apple-login", apple_login);
 
 export default router;

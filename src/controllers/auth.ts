@@ -13,6 +13,7 @@ import {
 } from "@utils/jwt";
 import { OAuth2Client } from "google-auth-library";
 import axios from "axios";
+import { decode, JwtPayload } from "jsonwebtoken";
 
 const signup = async (req: Request, res: Response) => {
   const {
@@ -267,39 +268,79 @@ const facebook_login = async (req: Request, res: Response) => {
       `https://graph.facebook.com/v20.0/me?fields=id,name,email,picture&access_token=${fbAccessToken}`
     );
 
-  const { id, name, email, picture } = response.data;
+    const { id, name, email, picture } = response.data;
 
-  let user = await User.findOne({ email });
+    let user = await User.findOne({ email });
 
-  if (user) {
-    if (!user.emailVerified) {
-      await User.updateOne({ email }, { $set: { emailVerified: true } });
+    if (user) {
+      if (!user.emailVerified) {
+        await User.updateOne({ email }, { $set: { emailVerified: true } });
+      }
+
+      if (!user.providers?.facebook) {
+        await User.updateOne(
+          { email },
+          { $set: { providers: { ...user.providers, facebook: id } } }
+        );
+      }
+    } else {
+      user = await User.create({
+        email,
+        name,
+        picture: picture?.data?.url,
+        providers: { facebook: id },
+        emailVerified: true,
+      });
     }
 
-    if (!user.providers?.facebook) {
-      await User.updateOne(
-        { email },
-        { $set: { providers: { ...user.providers, facebook: id } } }
-      );
-    }
-  } else {
-    user = await User.create({
-      email,
-      name,
-      picture: picture?.data?.url,
-      providers: { facebook: id },
-      emailVerified: true,
-    });
-  }
+    const accessToken = generateAccessToken(user.email, user.role);
+    const refreshToken = generateRefreshToken(user.email, user.role, true);
 
-  const accessToken = generateAccessToken(user.email, user.role);
-  const refreshToken = generateRefreshToken(user.email, user.role, true);
-
-  res
+    res
       .status(200)
       .json({ message: "Login successful", accessToken, refreshToken });
   } catch (error) {
     res.status(400).json({ message: (error as Error).message });
+    return;
+  }
+};
+
+const apple_login = async (req: Request, res: Response) => {
+  const { token } = req.body;
+
+  if (!token) {
+    res.status(400).json({ message: "Apple token not found" });
+    return;
+  }
+
+  try {
+    const decoded = decode(token, { complete: true });
+
+    if (!decoded) {
+      res.status(400).json({ message: "Invalid Apple token" });
+      return;
+    }
+
+    const { email, sub: appleId } = decoded.payload as JwtPayload;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = new User({
+        email,
+        providers: { apple: appleId },
+      });
+      await user.save();
+    }
+
+    const accessToken = generateAccessToken(user.email, user.role);
+    const refreshToken = generateRefreshToken(user.email, user.role, true);
+
+    res
+      .status(200)
+      .json({ message: "Login successful", accessToken, refreshToken });
+  } catch (error) {
+    res.status(401).json({ message: "Apple authentication failed" });
     return;
   }
 };
@@ -313,4 +354,5 @@ export {
   refresh_token,
   google_login,
   facebook_login,
+  apple_login,
 };
