@@ -1,11 +1,13 @@
 import { Router } from "express";
 import {
-  forgot_password,
-  login,
-  refresh_token,
-  reset_password,
   signup,
   verify_otp,
+  forgot_password,
+  reset_password,
+  facebook_login,
+  login,
+  google_login,
+  refresh_token,
 } from "@controllers/auth";
 
 const router = Router();
@@ -16,5 +18,7 @@ router.post("/forgot-password", forgot_password);
 router.post("/reset-password", reset_password);
 router.post("/login", login);
 router.post("/refresh-token", refresh_token);
+router.post("/google-login", google_login);
+router.post("/facebook-login", facebook_login);
 
 export default router;

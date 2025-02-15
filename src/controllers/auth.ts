@@ -11,6 +11,7 @@ import {
   verifyPasswordResetToken,
   verifyRefreshToken,
 } from "@utils/jwt";
+import { OAuth2Client } from "google-auth-library";
 
 const signup = async (req: Request, res: Response) => {
   const { name, email, phone, password } = req?.body || {};
@@ -127,6 +128,11 @@ const login = async (req: Request, res: Response) => {
     return;
   }
 
+  if (!user.passwordHash) {
+    res.status(400).json({ message: "Please login with social media" });
+    return;
+  }
+
   const isPasswordCorrect = await comparePassword(password, user.passwordHash);
   if (!isPasswordCorrect) {
     res.status(400).json({ message: "Invalid password" });
@@ -168,6 +174,66 @@ const refresh_token = async (req: Request, res: Response) => {
   }
 };
 
+const oAuthClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+const google_login = async (req: Request, res: Response) => {
+  const { token } = req?.body || {};
+
+  const ticket = await oAuthClient.verifyIdToken({
+    idToken: token,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+  const payload = ticket.getPayload();
+  if (!payload) {
+    res.status(400).json({ message: "Invalid token" });
+    return;
+  }
+
+  const email = payload?.email;
+  const name = payload?.name;
+  const picture = payload?.picture;
+
+  let user = await User.findOne({ email });
+  if (user) {
+    if (!user.emailVerified) {
+      await User.updateOne({ email }, { $set: { emailVerified: true } });
+    }
+
+    if (!user.providers?.google) {
+      await User.updateOne(
+        { email },
+        {
+          $set: {
+            providers: { ...user.providers, google: token },
+            emailVerified: true,
+          },
+        }
+      );
+    }
+  } else {
+    user = await User.create({
+      email,
+      name,
+      picture,
+      providers: { google: token },
+      emailVerified: true,
+    });
+  }
+
+  const accessToken = generateAccessToken(user.email, user.role);
+  const refreshToken = generateRefreshToken(user.email, user.role, true);
+
+  res
+    .status(200)
+    .json({ message: "Login successful", accessToken, refreshToken });
+};
+
+const facebook_login = async (req: Request, res: Response) => {
+  const { email } = req?.body || {};
+
+  const user = await User.findOne({ email });
+};
+
 export {
   signup,
   verify_otp,
@@ -175,4 +241,6 @@ export {
   reset_password,
   login,
   refresh_token,
+  google_login,
+  facebook_login,
 };
