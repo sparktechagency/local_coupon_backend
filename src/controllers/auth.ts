@@ -262,9 +262,10 @@ const facebook_login = async (req: Request, res: Response) => {
     return;
   }
 
-  const response = await axios.get(
-    `https://graph.facebook.com/v20.0/me?fields=id,name,email,picture&access_token=${fbAccessToken}`
-  );
+  try {
+    const response = await axios.get(
+      `https://graph.facebook.com/v20.0/me?fields=id,name,email,picture&access_token=${fbAccessToken}`
+    );
 
   const { id, name, email, picture } = response.data;
 
@@ -295,8 +296,12 @@ const facebook_login = async (req: Request, res: Response) => {
   const refreshToken = generateRefreshToken(user.email, user.role, true);
 
   res
-    .status(200)
-    .json({ message: "Login successful", accessToken, refreshToken });
+      .status(200)
+      .json({ message: "Login successful", accessToken, refreshToken });
+  } catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+    return;
+  }
 };
 
 export {
