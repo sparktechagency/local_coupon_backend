@@ -2,7 +2,10 @@ import { config } from "dotenv";
 import express from "express";
 import http from "http";
 import cors from "cors";
-import { registerUserRoutes } from "@routes/index";
+import {
+  registerRoutesThatNeedsRawBody,
+  registerUserRoutes,
+} from "@routes/index";
 import { startDB } from "src/db";
 
 // config
@@ -11,6 +14,8 @@ const app = express();
 const server = http.createServer(app);
 
 app.use(cors({ origin: "*" }));
+
+registerRoutesThatNeedsRawBody(app);
 app.use(express.json());
 registerUserRoutes(app);
 
