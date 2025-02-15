@@ -110,8 +110,8 @@ const forgot_password = async (req: Request, res: Response) => {
   }
 
   const emailError = await checkUserExists("email", email);
-  if (!emailError) {
-    res.status(400).json({ message: "User not found" });
+  if (emailError) {
+    res.status(400).json({ message: emailError });
     return;
   }
 
@@ -150,7 +150,7 @@ const login = async (req: Request, res: Response) => {
   }
 
   const user = await User.findOne({ email });
-  if (!user) {
+  if (!user || user.isDeleted) {
     res.status(400).json({ message: "User not found" });
     return;
   }
@@ -189,7 +189,7 @@ const refresh_token = async (req: Request, res: Response) => {
   try {
     const decoded = verifyRefreshToken(refreshToken);
     const user = await User.findOne({ email: decoded.email });
-    if (!user) {
+    if (!user || user.isDeleted) {
       res.status(400).json({ message: "User not found" });
       return;
     }
@@ -229,7 +229,7 @@ const google_login = async (req: Request, res: Response) => {
   const picture = payload?.picture;
 
   let user = await User.findOne({ email });
-  if (user) {
+  if (user && !user.isDeleted) {
     if (!user.emailVerified) {
       await User.updateOne({ email }, { $set: { emailVerified: true } });
     }
@@ -284,7 +284,7 @@ const facebook_login = async (req: Request, res: Response) => {
 
     let user = await User.findOne({ email });
 
-    if (user) {
+    if (user && !user.isDeleted) {
       if (!user.emailVerified) {
         await User.updateOne({ email }, { $set: { emailVerified: true } });
       }

@@ -13,7 +13,6 @@ const User = new Schema(
     email: {
       type: String,
       required: true,
-      unique: true,
     },
     phone: {
       type: String,
@@ -42,6 +41,10 @@ const User = new Schema(
       type: String,
       enum: ["user", "business", "admin"],
       default: "user",
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
     companyName: {
       type: String,
