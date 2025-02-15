@@ -29,10 +29,14 @@ const verifyPasswordResetToken = (token: string) => {
   return decoded;
 };
 
-const generateAccessToken = (email: string, role: string) => {
-  return sign({ email, role, purpose: "accessToken" }, ACCESS_TOKEN_SECRET, {
-    expiresIn: "2m",
-  });
+const generateAccessToken = (id: string, email: string, role: string) => {
+  return sign(
+    { id, email, role, purpose: "accessToken" },
+    ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: "2m",
+    }
+  );
 };
 
 const generateRefreshToken = (
@@ -64,10 +68,31 @@ const verifyRefreshToken = (token: string) => {
   return decoded;
 };
 
+export interface AccessTokenPayload {
+  id: string;
+  email: string;
+  role: string;
+  purpose: string;
+}
+
+const verifyAccessToken = (token: string) => {
+  const decoded = verify(token, ACCESS_TOKEN_SECRET) as AccessTokenPayload;
+  if (decoded.purpose !== "accessToken") {
+    throw new Error("Invalid token");
+  }
+  return {
+    id: decoded.id,
+    email: decoded.email,
+    role: decoded.role,
+    purpose: decoded.purpose,
+  };
+};
+
 export {
   generatePasswordResetToken,
   verifyPasswordResetToken,
   generateAccessToken,
   generateRefreshToken,
   verifyRefreshToken,
+  verifyAccessToken,
 };

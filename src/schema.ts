@@ -18,6 +18,19 @@ const User = new Schema(
     phone: {
       type: String,
     },
+    dateOfBirth: {
+      type: Date,
+      default: null,
+    },
+    gender: {
+      type: String,
+      enum: ["male", "female", "other"],
+      default: "other",
+    },
+    location: {
+      type: String,
+      default: null,
+    },
     passwordHash: {
       type: String,
     },

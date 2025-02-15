@@ -166,7 +166,11 @@ const login = async (req: Request, res: Response) => {
     return;
   }
 
-  const accessToken = generateAccessToken(user.email, user.role);
+  const accessToken = generateAccessToken(
+    user._id.toString(),
+    user.email,
+    user.role
+  );
   const refreshToken = generateRefreshToken(user.email, user.role, remember_me);
 
   res
@@ -189,7 +193,11 @@ const refresh_token = async (req: Request, res: Response) => {
       res.status(400).json({ message: "User not found" });
       return;
     }
-    const accessToken = generateAccessToken(user.email, user.role);
+    const accessToken = generateAccessToken(
+      user._id.toString(),
+      user.email,
+      user.role
+    );
     res.status(200).json({
       message: "Token refreshed",
       accessToken,
@@ -247,7 +255,11 @@ const google_login = async (req: Request, res: Response) => {
     });
   }
 
-  const accessToken = generateAccessToken(user.email, user.role);
+  const accessToken = generateAccessToken(
+    user._id.toString(),
+    user.email,
+    user.role
+  );
   const refreshToken = generateRefreshToken(user.email, user.role, true);
 
   res
@@ -293,7 +305,11 @@ const facebook_login = async (req: Request, res: Response) => {
       });
     }
 
-    const accessToken = generateAccessToken(user.email, user.role);
+    const accessToken = generateAccessToken(
+      user._id.toString(),
+      user.email,
+      user.role
+    );
     const refreshToken = generateRefreshToken(user.email, user.role, true);
 
     res
@@ -333,7 +349,11 @@ const apple_login = async (req: Request, res: Response) => {
       await user.save();
     }
 
-    const accessToken = generateAccessToken(user.email, user.role);
+    const accessToken = generateAccessToken(
+      user._id.toString(),
+      user.email,
+      user.role
+    );
     const refreshToken = generateRefreshToken(user.email, user.role, true);
 
     res
