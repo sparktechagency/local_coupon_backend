@@ -35,10 +35,18 @@ const generateAccessToken = (email: string, role: string) => {
   });
 };
 
-const generateRefreshToken = (email: string, role: string) => {
-  return sign({ email, role, purpose: "refreshToken" }, REFRESH_TOKEN_SECRET, {
-    expiresIn: "1d",
-  });
+const generateRefreshToken = (
+  email: string,
+  role: string,
+  remember_me: boolean
+) => {
+  return sign(
+    { email, role, purpose: "refreshToken", remember_me },
+    REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: remember_me ? "30d" : "1d",
+    }
+  );
 };
 
 export {

@@ -2,10 +2,12 @@ import { Request, Response } from "express";
 import { User } from "src/db";
 import { sendOTP, verifyOTP } from "@services/otpService";
 import validateRequiredFields from "@utils/validateFields";
-import plainPasswordToHash from "@utils/plainPasswordToHash";
+import { plainPasswordToHash, comparePassword } from "@utils/passwordHashing";
 import checkUserExists from "@utils/checkUserExists";
 import {
+  generateAccessToken,
   generatePasswordResetToken,
+  generateRefreshToken,
   verifyPasswordResetToken,
 } from "@utils/jwt";
 
@@ -110,7 +112,7 @@ const reset_password = async (req: Request, res: Response) => {
 };
 
 const login = async (req: Request, res: Response) => {
-  const { email, password } = req?.body || {};
+  const { email, password, remember_me } = req?.body || {};
 
   const error = validateRequiredFields({ email, password });
   if (error) {
@@ -124,7 +126,18 @@ const login = async (req: Request, res: Response) => {
     return;
   }
 
-  res.status(200).json({ message: "Login successful" });
+  const isPasswordCorrect = await comparePassword(password, user.passwordHash);
+  if (!isPasswordCorrect) {
+    res.status(400).json({ message: "Invalid password" });
+    return;
+  }
+
+  const accessToken = generateAccessToken(user.email, user.role);
+  const refreshToken = generateRefreshToken(user.email, user.role, remember_me);
+
+  res
+    .status(200)
+    .json({ message: "Login successful", accessToken, refreshToken });
 };
 
 export { signup, verify_otp, forgot_password, reset_password, login };
