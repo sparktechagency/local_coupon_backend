@@ -27,8 +27,20 @@ const User = new Schema(
     },
     role: {
       type: String,
-      enum: ["user", "admin"],
+      enum: ["user", "business", "admin"],
       default: "user",
+    },
+    companyName: {
+      type: String,
+      default: null,
+    },
+    companyAddress: {
+      type: String,
+      default: null,
+    },
+    socials: {
+      type: Object,
+      default: null,
     },
     providers: {
       facebook: { type: String, default: null },

@@ -15,7 +15,16 @@ import { OAuth2Client } from "google-auth-library";
 import axios from "axios";
 
 const signup = async (req: Request, res: Response) => {
-  const { name, email, phone, password } = req?.body || {};
+  const {
+    name,
+    email,
+    phone,
+    password,
+    role,
+    companyName,
+    companyAddress,
+    socials,
+  } = req?.body || {};
 
   const error = validateRequiredFields({ name, email, phone, password });
   if (error) {
@@ -23,6 +32,16 @@ const signup = async (req: Request, res: Response) => {
     return;
   }
 
+  if (role === "business") {
+    const error = validateRequiredFields({
+      companyName,
+      companyAddress,
+    });
+    if (error) {
+      res.status(400).json({ message: error });
+      return;
+    }
+  }
   const emailError = await checkUserExists("email", email);
   if (emailError) {
     res.status(400).json({ message: emailError });
@@ -37,6 +56,12 @@ const signup = async (req: Request, res: Response) => {
 
   const passwordHash = await plainPasswordToHash(password);
   await User.create({ name, email, phone, passwordHash });
+  if (role === "business") {
+    await User.updateOne(
+      { email },
+      { $set: { companyName, companyAddress, socials } }
+    );
+  }
   await sendOTP(email, "signup");
 
   res.status(200).json({ message: "OTP sent to email" });
