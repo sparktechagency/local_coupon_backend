@@ -3,8 +3,9 @@ import express from "express";
 import http from "http";
 import cors from "cors";
 import {
-  registerRoutesThatNeedsRawBody,
   registerUserRoutes,
+  registerAdminRoutes,
+  registerRoutesThatNeedsRawBody,
 } from "@routes/index";
 import { startDB } from "src/db";
 
@@ -18,6 +19,7 @@ app.use(cors({ origin: "*" }));
 registerRoutesThatNeedsRawBody(app);
 app.use(express.json());
 registerUserRoutes(app);
+registerAdminRoutes(app);
 
 // server
 const PORT = process.env.PORT || 3000;

@@ -3,6 +3,7 @@ import {
   User as UserSchema,
   OTP as OTPSchema,
   Payment as PaymentSchema,
+  Subscription as SubscriptionSchema,
 } from "src/schema";
 
 const startDB = async () => {
@@ -13,5 +14,6 @@ const startDB = async () => {
 const User = model("User", UserSchema);
 const OTP = model("OTP", OTPSchema);
 const Payment = model("Payment", PaymentSchema);
+const Subscription = model("Subscription", SubscriptionSchema);
 
-export { User, OTP, Payment, startDB };
+export { User, OTP, Payment, Subscription, startDB };

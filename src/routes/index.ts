@@ -1,5 +1,6 @@
 import authorize from "@middleware/auth";
 import * as userRouter from "@routes/app";
+import * as adminRouter from "@routes/admin";
 import webhookRoutes from "@routes/webhook.routes";
 
 const registerUserRoutes = (app: any) => {
@@ -8,8 +9,16 @@ const registerUserRoutes = (app: any) => {
   app.use("/stripe", authorize(["user"]), userRouter.stripeRoutes);
 };
 
+const registerAdminRoutes = (app: any) => {
+  app.use("/admin", authorize(["admin"]), adminRouter.subscriptionsRoutes);
+};
+
 const registerRoutesThatNeedsRawBody = (app: any) => {
   app.use("/stripe", webhookRoutes);
 };
 
-export { registerUserRoutes, registerRoutesThatNeedsRawBody };
+export {
+  registerUserRoutes,
+  registerAdminRoutes,
+  registerRoutesThatNeedsRawBody,
+};

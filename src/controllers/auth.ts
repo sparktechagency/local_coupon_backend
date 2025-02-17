@@ -57,7 +57,7 @@ const signup = async (req: Request, res: Response) => {
   }
 
   const passwordHash = await plainPasswordToHash(password);
-  await User.create({ name, email, phone, passwordHash });
+  await User.create({ name, email, phone, passwordHash, role });
   if (role === "business") {
     await User.updateOne(
       { email },

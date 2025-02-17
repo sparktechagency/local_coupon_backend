@@ -1,7 +1,7 @@
 import { AccessTokenPayload } from "@utils/jwt";
 import validateRequiredFields from "@utils/validateFields";
 import { Request, Response } from "express";
-import { Payment, User } from "src/db";
+import { Payment, Subscription, User } from "src/db";
 import Stripe from "stripe";
 
 interface CreatePaymentRequest extends Request {
@@ -10,31 +10,10 @@ interface CreatePaymentRequest extends Request {
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
-const packages = [
-  {
-    id: "gold",
-    name: "Impacto Gold",
-    price: 900,
-    duration: 1,
-  },
-  {
-    id: "platinum",
-    name: "Impacto Platinum",
-    price: 4900,
-    duration: 6,
-  },
-  {
-    id: "diamond",
-    name: "Impacto Diamond",
-    price: 9900,
-    duration: 12,
-  },
-];
-
 const create_payment = async (req: CreatePaymentRequest, res: Response) => {
-  const { packageId } = req.body || {};
+  const { packageName } = req.body || {};
 
-  const error = validateRequiredFields({ packageId });
+  const error = validateRequiredFields({ packageName });
   if (error) {
     res.status(400).send(error);
     return;
@@ -47,7 +26,7 @@ const create_payment = async (req: CreatePaymentRequest, res: Response) => {
     return;
   }
 
-  const selectedPackage = packages.find((p) => p.id === packageId);
+  const selectedPackage = await Subscription.findOne({ name: packageName });
   if (!selectedPackage) {
     res.status(400).send("Invalid package selected");
     return;
@@ -56,7 +35,7 @@ const create_payment = async (req: CreatePaymentRequest, res: Response) => {
   const session = await stripe.checkout.sessions.create({
     client_reference_id: user._id.toString(),
     metadata: {
-      packageId,
+      packageId: selectedPackage._id.toString(),
     },
     line_items: [
       {
@@ -65,10 +44,10 @@ const create_payment = async (req: CreatePaymentRequest, res: Response) => {
           product_data: {
             name: selectedPackage.name,
           },
-          unit_amount: selectedPackage.price,
+          unit_amount: selectedPackage.priceInCents,
           recurring: {
             interval: "month",
-            interval_count: selectedPackage.duration,
+            interval_count: selectedPackage.durationInMonths,
           },
         },
         quantity: 1,
@@ -113,8 +92,8 @@ const stripe_webhook = async (req: Request, res: Response) => {
         paymentMethod: session.payment_method_types[0],
       });
 
-      const packageId = packages.find(
-        (p) => p.id === session.metadata?.packageId
+      const packageId = await Subscription.findById(
+        session.metadata?.packageId
       );
       if (!packageId) {
         console.log("Package ID missing");
@@ -125,7 +104,7 @@ const stripe_webhook = async (req: Request, res: Response) => {
       await User.findByIdAndUpdate(session.client_reference_id, {
         isSubscribed: true,
         subscriptionExpiry: new Date(
-          Date.now() + packageId?.duration * 30 * 24 * 60 * 60 * 1000
+          Date.now() + packageId?.durationInMonths * 30 * 24 * 60 * 60 * 1000
         ),
       });
 

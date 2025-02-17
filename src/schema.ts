@@ -117,4 +117,22 @@ const Payment = new Schema(
   { timestamps: true }
 );
 
-export { User, OTP, Payment };
+const Subscription = new Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  priceInCents: {
+    type: Number,
+    required: true,
+  },
+  durationInMonths: {
+    type: Number,
+    required: true,
+  },
+  info: {
+    type: [String],
+  },
+});
+
+export { User, OTP, Payment, Subscription };
