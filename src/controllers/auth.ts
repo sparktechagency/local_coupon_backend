@@ -14,6 +14,7 @@ import {
 import { OAuth2Client } from "google-auth-library";
 import axios from "axios";
 import { decode, JwtPayload } from "jsonwebtoken";
+import checkSubscriptionStatus from "@utils/checkSubscriptionStatus";
 
 const signup = async (req: Request, res: Response) => {
   const {
@@ -166,6 +167,8 @@ const login = async (req: Request, res: Response) => {
     return;
   }
 
+  await checkSubscriptionStatus(user._id.toString());
+
   const accessToken = generateAccessToken(
     user._id.toString(),
     user.email,
@@ -193,6 +196,7 @@ const refresh_token = async (req: Request, res: Response) => {
       res.status(400).json({ message: "User not found" });
       return;
     }
+    await checkSubscriptionStatus(user._id.toString());
     const accessToken = generateAccessToken(
       user._id.toString(),
       user.email,
