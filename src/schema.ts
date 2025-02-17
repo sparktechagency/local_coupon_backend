@@ -63,6 +63,14 @@ const User = new Schema(
       google: { type: String, default: null },
       apple: { type: String, default: null },
     },
+    isSubscribed: {
+      type: Boolean,
+      default: false,
+    },
+    subscriptionExpiry: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
@@ -84,4 +92,29 @@ const OTP = new Schema({
   },
 });
 
-export { User, OTP };
+const Payment = new Schema(
+  {
+    amount: {
+      type: Number,
+      required: true,
+    },
+    paymentId: {
+      type: String,
+      required: true,
+    },
+    paymentStatus: {
+      type: String,
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    paymentMethod: {
+      type: String,
+    },
+  },
+  { timestamps: true }
+);
+
+export { User, OTP, Payment };

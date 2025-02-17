@@ -1,5 +1,6 @@
 import authorize from "@middleware/auth";
 import * as userRouter from "@routes/app";
+import webhookRoutes from "@routes/webhook.routes";
 
 const registerUserRoutes = (app: any) => {
   app.use("/auth", userRouter.authRoutes);
@@ -8,7 +9,7 @@ const registerUserRoutes = (app: any) => {
 };
 
 const registerRoutesThatNeedsRawBody = (app: any) => {
-  app.use("/stripe", userRouter.stripeRoutes);
+  app.use("/stripe", webhookRoutes);
 };
 
 export { registerUserRoutes, registerRoutesThatNeedsRawBody };

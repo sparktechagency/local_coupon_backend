@@ -1,8 +1,8 @@
-import { create_checkout_session } from "@controllers/stripe";
+import { create_payment } from "@controllers/stripe";
 import { Router } from "express";
 
 const router = Router();
 
-router.post("/create-checkout-session", create_checkout_session);
+router.post("/create-payment", create_payment);
 
 export default router;
