@@ -135,4 +135,33 @@ const Subscription = new Schema({
   },
 });
 
-export { User, OTP, Payment, Subscription };
+const FAQs = new Schema({
+  question: {
+    type: String,
+    required: true,
+  },
+  answer: {
+    type: String,
+    required: true,
+  },
+});
+const Terms = new Schema(
+  {
+    content: {
+      type: String,
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
+const Privacy = new Schema(
+  {
+    content: {
+      type: String,
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
+
+export { User, OTP, Payment, Subscription, FAQs, Terms, Privacy };

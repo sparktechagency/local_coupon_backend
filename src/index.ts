@@ -8,6 +8,7 @@ import {
   registerRoutesThatNeedsRawBody,
 } from "@routes/index";
 import { startDB } from "src/db";
+import logger from "@utils/logger";
 
 // config
 config();
@@ -16,11 +17,11 @@ const server = http.createServer(app);
 
 app.use(cors({ origin: "*" }));
 
+app.use(logger);
 registerRoutesThatNeedsRawBody(app);
 app.use(express.json());
 registerUserRoutes(app);
 registerAdminRoutes(app);
-
 // server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {

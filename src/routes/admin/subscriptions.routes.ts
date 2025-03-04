@@ -3,6 +3,6 @@ import { add_subscription } from "@controllers/subscriptions";
 
 const router = Router();
 
-router.post("/subscriptions", add_subscription);
+router.post("/", add_subscription);
 
 export default router;
