@@ -145,6 +145,7 @@ const FAQs = new Schema({
     required: true,
   },
 });
+
 const Terms = new Schema(
   {
     content: {
@@ -154,6 +155,7 @@ const Terms = new Schema(
   },
   { timestamps: true }
 );
+
 const Privacy = new Schema(
   {
     content: {
