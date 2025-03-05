@@ -6,7 +6,7 @@ const logger = (req: Request, res: Response, next: NextFunction) => {
   const start = process.hrtime(); // Start time tracking
   const method = req.method;
   const url = req.originalUrl;
-  const ip = req.ip || req.connection.remoteAddress;
+  const ip = req.ip || req.socket.remoteAddress;
   const userAgent = req.get("User-Agent") || "Unknown";
 
   // Process body only for relevant methods
