@@ -28,7 +28,7 @@ const get_profile = async (req: AuthenticatedRequest, res: Response) => {
     location,
   } = user;
 
-  res.status(200).json({
+  const responsePayload: any = {
     _id,
     email,
     name,
@@ -38,15 +38,43 @@ const get_profile = async (req: AuthenticatedRequest, res: Response) => {
     dateOfBirth,
     gender,
     location,
-  });
+  };
+
+  if (role === "business") {
+    responsePayload.companyName = user.companyName;
+    responsePayload.companyAddress = user.companyAddress;
+    responsePayload.socials = user.socials;
+  }
+
+  res.status(200).json(responsePayload);
 };
 
 const update_profile = async (req: AuthenticatedRequest, res: Response) => {
-  const { name, dateOfBirth, gender, location } = req.body;
+  const {
+    name,
+    dateOfBirth,
+    gender,
+    location,
+    companyName,
+    companyAddress,
+    socials,
+  } = req.body;
   const user = await User.findById(req.user?.id);
   if (!user || user.isDeleted) {
     res.status(404).json({ message: "User not found" });
     return;
+  }
+
+  if (companyName || companyAddress || socials) {
+    if (user.role !== "business") {
+      res
+        .status(403)
+        .json({ message: "Only business users can update company details" });
+      return;
+    }
+    user.companyName = companyName;
+    user.companyAddress = companyAddress;
+    user.socials = socials;
   }
 
   user.name = name;

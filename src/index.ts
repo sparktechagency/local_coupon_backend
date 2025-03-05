@@ -17,9 +17,9 @@ const server = http.createServer(app);
 
 app.use(cors({ origin: "*" }));
 
-app.use(logger);
 registerRoutesThatNeedsRawBody(app);
 app.use(express.json());
+app.use(logger);
 registerUserRoutes(app);
 registerAdminRoutes(app);
 // server

@@ -11,7 +11,7 @@ const userRoutes = [
   {
     path: "/profile",
     router: userRouter.profileRoutes,
-    middleware: authorize(["user"]),
+    middleware: authorize(["user", "business"]),
   },
   {
     path: "/stripe",
