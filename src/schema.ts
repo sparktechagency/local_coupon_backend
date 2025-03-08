@@ -55,7 +55,7 @@ const User = new Schema(
       default: null,
     },
     hoursOfOperation: {
-      type: String,
+      type: Array,
       default: null,
     },
     socials: {

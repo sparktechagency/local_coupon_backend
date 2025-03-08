@@ -5,6 +5,7 @@ import parseDate from "@utils/parseDate";
 import uploadService from "@services/uploadService";
 import { comparePassword, plainPasswordToHash } from "@utils/passwordHashing";
 import validateRequiredFields from "@utils/validateFields";
+import validateHoursOfOperation from "@utils/validateHoursOfOperation";
 
 interface AuthenticatedRequest extends Request {
   user?: AccessTokenPayload;
@@ -95,14 +96,21 @@ const update_profile = async (req: AuthenticatedRequest, res: Response) => {
     user.phone = phone || user.phone;
 
     if (hoursOfOperation) {
-      const hoursRegex =
-        /^([01]\d|2[0-3]):([0-5]\d)-([01]\d|2[0-3]):([0-5]\d)$/;
-      if (!hoursRegex.test(hoursOfOperation)) {
+      // Check if hoursOfOperation is an array and has 7 elements
+      if (!Array.isArray(hoursOfOperation)) {
         res.status(400).json({
-          message: "Invalid hours of operation format. Use HH:MM-HH:MM",
+          message: "Hours of operation should be an array.",
         });
         return;
       }
+
+      const notValid = validateHoursOfOperation(hoursOfOperation);
+
+      if (notValid) {
+        res.status(400).json(notValid);
+        return;
+      }
+
       user.hoursOfOperation = hoursOfOperation || user.hoursOfOperation;
     }
   }
