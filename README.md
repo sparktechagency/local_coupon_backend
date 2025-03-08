@@ -1,3 +1,7 @@
+## Todos
+- business profile - hours of operation & phone number fields
+- add, get, update, delete coupon 
+
 ## Impacto
 Impacto is a local coupon app that allows users to find and redeem coupons from local businesses and allows businesses to offer coupons to their customers.
 

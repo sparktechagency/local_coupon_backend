@@ -23,6 +23,11 @@ const userRoutes = [
     router: userRouter.legalRoutes,
     middleware: authorize(["user"]),
   },
+  {
+    path: "/contact-us",
+    router: userRouter.contactUsRoutes,
+    middleware: authorize(["user"]),
+  },
 ];
 
 const adminRoutes = [
