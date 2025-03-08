@@ -12,7 +12,7 @@ interface AuthenticatedRequest extends Request {
   user?: AccessTokenPayload;
 }
 
-const authorize = (allowedRoles: string[]) => {
+const authorize = (allowedRoles: Array<"user" | "business" | "admin">) => {
   return async (
     req: AuthenticatedRequest,
     res: Response,
@@ -30,7 +30,9 @@ const authorize = (allowedRoles: string[]) => {
         res.status(401).json({ message: "Unauthorized" });
         return;
       }
-      if (!allowedRoles.includes(decoded.role)) {
+      if (
+        !allowedRoles.includes(decoded.role as "user" | "business" | "admin")
+      ) {
         res.status(401).json({ message: "Unauthorized" });
         return;
       }

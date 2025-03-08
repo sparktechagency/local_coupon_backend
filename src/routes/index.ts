@@ -26,7 +26,12 @@ const userRoutes = [
   {
     path: "/contact-us",
     router: userRouter.contactUsRoutes,
-    middleware: authorize(["user"]),
+    middleware: authorize(["user", "business"]),
+  },
+  {
+    path: "/coupons",
+    router: userRouter.couponsRoutes,
+    // auth middlewares for this route is in the coupons.routes.ts file,
   },
 ];
 
