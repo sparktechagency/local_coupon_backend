@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyAccessToken } from "@utils/jwt";
+import { User } from "src/db";
 
 interface AccessTokenPayload {
   email: string;
@@ -12,7 +13,11 @@ interface AuthenticatedRequest extends Request {
 }
 
 const authorize = (allowedRoles: string[]) => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  return async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
       res.status(401).json({ message: "Unauthorized" });
@@ -26,6 +31,13 @@ const authorize = (allowedRoles: string[]) => {
         return;
       }
       if (!allowedRoles.includes(decoded.role)) {
+        res.status(401).json({ message: "Unauthorized" });
+        return;
+      }
+
+      const user = await User.findById(decoded.id);
+
+      if (!user) {
         res.status(401).json({ message: "Unauthorized" });
         return;
       }

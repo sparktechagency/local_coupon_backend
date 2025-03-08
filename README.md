@@ -1,4 +1,5 @@
 ## Todos
+- add, get, update, delete coupon categories
 - add, get, update, delete coupon 
 
 ## Impacto

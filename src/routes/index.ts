@@ -39,6 +39,10 @@ const adminRoutes = [
     path: "/legal",
     router: adminRouter.legalRoutes,
   },
+  {
+    path: "/categories",
+    router: adminRouter.categoriesRoutes,
+  },
 ];
 
 const registerUserRoutes = (app: any) => {

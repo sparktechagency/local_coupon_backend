@@ -170,4 +170,16 @@ const Privacy = new Schema(
   { timestamps: true }
 );
 
-export { User, OTP, Payment, Subscription, FAQs, Terms, Privacy };
+const Categories = new Schema({
+  name: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  icon_url: {
+    type: String,
+    required: true,
+  },
+});
+
+export { User, OTP, Payment, Subscription, FAQs, Terms, Privacy, Categories };

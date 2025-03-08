@@ -7,6 +7,7 @@ import {
   FAQs as FAQsSchema,
   Terms as TermsSchema,
   Privacy as PrivacySchema,
+  Categories as CategoriesSchema,
 } from "src/schema";
 
 const startDB = async () => {
@@ -21,5 +22,16 @@ const Subscription = model("Subscription", SubscriptionSchema);
 const FAQs = model("FAQs", FAQsSchema);
 const Terms = model("Terms", TermsSchema);
 const Privacy = model("Privacy", PrivacySchema);
+const Categories = model("Categories", CategoriesSchema);
 
-export { User, OTP, Payment, Subscription, FAQs, Terms, Privacy, startDB };
+export {
+  User,
+  OTP,
+  Payment,
+  Subscription,
+  FAQs,
+  Terms,
+  Privacy,
+  Categories,
+  startDB,
+};
