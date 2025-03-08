@@ -24,7 +24,7 @@ const User = new Schema(
     gender: {
       type: String,
       enum: ["male", "female", "other"],
-      default: "other",
+      default: null,
     },
     location: {
       type: String,
@@ -51,6 +51,10 @@ const User = new Schema(
       default: null,
     },
     companyAddress: {
+      type: String,
+      default: null,
+    },
+    hoursOfOperation: {
       type: String,
       default: null,
     },

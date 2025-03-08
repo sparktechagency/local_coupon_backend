@@ -16,6 +16,14 @@ const get_profile = async (req: AuthenticatedRequest, res: Response) => {
     res.status(404).json({ message: "User not found" });
     return;
   }
+
+  if (user.emailVerified === false) {
+    res.status(403).json({
+      message: "Please verify your email before viewing your profile",
+    });
+    return;
+  }
+
   const {
     _id,
     email,
@@ -57,6 +65,8 @@ const update_profile = async (req: AuthenticatedRequest, res: Response) => {
     location,
     companyName,
     companyAddress,
+    hoursOfOperation,
+    phone,
     socials,
   } = req.body;
   const user = await User.findById(req.user?.id);
@@ -65,21 +75,41 @@ const update_profile = async (req: AuthenticatedRequest, res: Response) => {
     return;
   }
 
-  if (companyName || companyAddress || socials) {
+  if (user.emailVerified === false) {
+    res.status(403).json({
+      message: "Please verify your email before updating your profile",
+    });
+    return;
+  }
+
+  if (companyName || companyAddress || socials || hoursOfOperation || phone) {
     if (user.role !== "business") {
       res
         .status(403)
         .json({ message: "Only business users can update company details" });
       return;
     }
-    user.companyName = companyName;
-    user.companyAddress = companyAddress;
-    user.socials = socials;
+    user.companyName = companyName || user.companyName;
+    user.companyAddress = companyAddress || user.companyAddress;
+    user.socials = socials || user.socials;
+    user.phone = phone || user.phone;
+
+    if (hoursOfOperation) {
+      const hoursRegex =
+        /^([01]\d|2[0-3]):([0-5]\d)-([01]\d|2[0-3]):([0-5]\d)$/;
+      if (!hoursRegex.test(hoursOfOperation)) {
+        res.status(400).json({
+          message: "Invalid hours of operation format. Use HH:MM-HH:MM",
+        });
+        return;
+      }
+      user.hoursOfOperation = hoursOfOperation || user.hoursOfOperation;
+    }
   }
 
-  user.name = name;
-  user.gender = gender;
-  user.location = location;
+  user.name = name || user.name;
+  user.gender = gender || user.gender;
+  user.location = location || user.location;
   if (dateOfBirth) {
     const parsedDate = parseDate(dateOfBirth);
     if (!parsedDate) {
@@ -104,6 +134,14 @@ const update_picture = async (req: AuthenticatedRequest, res: Response) => {
     res.status(404).json({ message: "User not found" });
     return;
   }
+
+  if (user.emailVerified === false) {
+    res.status(403).json({
+      message: "Please verify your email before updating your profile picture",
+    });
+    return;
+  }
+
   const uploadedPicture = await uploadService(picture, "image");
   if (!uploadedPicture) {
     res.status(400).json({ message: "Failed to upload picture" });

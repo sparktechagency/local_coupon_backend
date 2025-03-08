@@ -1,5 +1,4 @@
 ## Todos
-- business profile - hours of operation & phone number fields
 - add, get, update, delete coupon 
 
 ## Impacto
