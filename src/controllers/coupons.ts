@@ -3,6 +3,7 @@ import { AccessTokenPayload } from "@utils/jwt";
 import validateCoupon from "@utils/validateCoupon";
 import validateRequiredFields from "@utils/validateFields";
 import { Request, Response } from "express";
+import mongoose from "mongoose";
 import { Coupon, User } from "src/db";
 interface AuthenticatedRequest extends Request {
   user?: AccessTokenPayload;
@@ -208,25 +209,58 @@ const update_coupon = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
-const delete_coupon = async (req: Request, res: Response) => {
-  const coupon = await Coupon.findById(req?.query?.id);
-
-  if (!coupon) {
-    res.status(404).json({
-      message: "Coupon with this ID doesn't exist",
-    });
+const delete_coupon = async (req: AuthenticatedRequest, res: Response) => {
+  if (!req.query.id) {
+    res.status(400).json({ message: "Coupon ID is required" });
     return;
   }
 
-  try {
-    await coupon.deleteOne();
+  if (req.user?.role === "business") {
+    const coupon = await Coupon.findById(
+      new mongoose.Types.ObjectId(req?.query?.id as string)
+    );
+
+    if (!coupon) {
+      res.status(404).json({
+        message: "Coupon with this ID doesn't exist",
+      });
+      return;
+    }
+
+    try {
+      await coupon.deleteOne();
+      res.json({
+        message: "Coupon successfully deleted",
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        message: "Internal Server Error",
+      });
+    }
+  }
+
+  if (req.user?.role === "user") {
+    const user = await User.findById(req.user?.id);
+
+    if (
+      !user?.downloadedCoupons.includes(
+        new mongoose.Types.ObjectId(req?.query?.id as string)
+      )
+    ) {
+      res
+        .status(400)
+        .json({ message: "Coupon ID not found in downloaded coupons" });
+      return;
+    }
+
+    await User.findOneAndUpdate(
+      { _id: req.user?.id },
+      { $pull: { downloadedCoupons: req.query.id } },
+      { new: true }
+    );
     res.json({
-      message: "Coupon successfully deleted",
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      message: "Internal Server Error",
+      message: "Coupon successfully removed from downloaded coupons",
     });
   }
 };

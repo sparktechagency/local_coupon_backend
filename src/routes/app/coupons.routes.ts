@@ -21,7 +21,7 @@ router.patch(
   authorize(["business"]),
   update_coupon
 );
-router.delete("/", authorize(["business"]), delete_coupon);
+router.delete("/", authorize(["user", "business"]), delete_coupon);
 
 router.get("/download", authorize(["user"]), download_coupon);
 
