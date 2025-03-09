@@ -22,4 +22,8 @@ router.patch(
 );
 router.delete("/", authorize(["business"]), delete_coupon);
 
+// [user] -> download coupon
+// [user] -> remove from downloaded coupon
+// [business] -> coupon performance analytics
+
 export default router;

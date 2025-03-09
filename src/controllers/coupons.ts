@@ -8,7 +8,19 @@ interface AuthenticatedRequest extends Request {
   user?: AccessTokenPayload;
 }
 
-const get_coupons = (req: Request, res: Response) => {};
+const get_coupons = async (req: AuthenticatedRequest, res: Response) => {
+  if (req?.user?.role === "business") {
+    const coupons = await Coupon.find(
+      { createdBy: req?.user?.id },
+      { __v: 0, add_to_carousel: 0 }
+    );
+    res.json(coupons);
+  }
+  if (req?.user?.role === "user") {
+    // const coupons = await Coupon.find({ createdBy: req?.user?.id });
+    res.json({ message: "Downloaded coupons coming soon." });
+  }
+};
 
 const add_coupon = async (req: AuthenticatedRequest, res: Response) => {
   const {
