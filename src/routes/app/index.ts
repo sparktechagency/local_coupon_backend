@@ -4,6 +4,7 @@ import stripeRoutes from "./stripe.routes";
 import legalRoutes from "./legal.routes";
 import contactUsRoutes from "./contact-us.routes";
 import couponsRoutes from "./coupons.routes";
+import categoriesRoutes from "./categories.routes";
 
 export {
   authRoutes,
@@ -12,4 +13,5 @@ export {
   legalRoutes,
   contactUsRoutes,
   couponsRoutes,
+  categoriesRoutes
 };

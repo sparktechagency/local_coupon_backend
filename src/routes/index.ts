@@ -33,6 +33,11 @@ const userRoutes = [
     router: userRouter.couponsRoutes,
     // auth middlewares for this route is in the coupons.routes.ts file,
   },
+  {
+    path: "/categories",
+    router: userRouter.categoriesRoutes,
+    middleware: authorize(["user", "business"]),
+  },
 ];
 
 const adminRoutes = [

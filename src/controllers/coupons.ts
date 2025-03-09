@@ -106,8 +106,122 @@ const add_coupon = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
-const update_coupon = (req: Request, res: Response) => {};
+const update_coupon = async (req: AuthenticatedRequest, res: Response) => {
+  const {
+    id,
+    category_id,
+    discount_percentage,
+    promo_title,
+    regular_amount,
+    discount_amount,
+    mxn_amount,
+    more_details,
+    start,
+    end,
+    add_to_carousel,
+  } = req.body || {};
+  const photo = req.file;
 
-const delete_coupon = (req: Request, res: Response) => {};
+  const error = validateRequiredFields({ id });
+  if (error) {
+    res.status(400).json({ message: error });
+    return;
+  }
+
+  const coupon = await Coupon.findById(id);
+
+  if (!coupon) {
+    res.status(404).json({
+      message: "Coupon with this ID doesn't exist",
+    });
+    return;
+  }
+
+  const couponError = validateCoupon({
+    discount_percentage: discount_percentage || coupon.discount_percentage,
+    promo_title: promo_title || coupon.promo_title,
+    regular_amount: regular_amount || coupon.regular_amount,
+    discount_amount: discount_amount || coupon.discount_amount,
+    mxn_amount: mxn_amount || coupon.mxn_amount,
+  });
+
+  if (couponError) {
+    res.status(400).json({ message: "This coupon type doesn't support the provided fields" });
+    return;
+  }
+
+  let photo_url;
+
+  if (photo) {
+    try {
+      photo_url = await uploadService(photo, "image");
+    } catch (error) {
+      console.log(error);
+      res
+        .status(500)
+        .json({ message: "Internal Server Error. Upload Service failed" });
+      return;
+    }
+  }
+
+  let startDate, endDate;
+
+  if (start) {
+    const [startDay, startMonth, startYear] = start.split("/").map(Number);
+    startDate = new Date(startYear, startMonth - 1, startDay);
+  }
+
+  if (end) {
+    const [endDay, endMonth, endYear] = end.split("/").map(Number);
+    endDate = new Date(endYear, endMonth - 1, endDay);
+  }
+
+  try {
+    const payload = {
+      ...(category_id && { category: category_id }),
+      ...(promo_title && { promo_title }),
+      ...(more_details && { more_details }),
+      ...(startDate && { start: startDate }),
+      ...(endDate && { end: endDate }),
+      ...(add_to_carousel && { add_to_carousel }),
+      ...(photo_url && { photo_url }),
+      ...(discount_percentage && {
+        discount_percentage: Number(discount_percentage),
+      }),
+      ...(regular_amount && { regular_amount: Number(regular_amount) }),
+      ...(discount_amount && { discount_amount: Number(discount_amount) }),
+      ...(mxn_amount && { mxn_amount: Number(mxn_amount) }),
+    };
+
+    await coupon.updateOne(payload);
+    res.json({ message: "Coupon updated successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+const delete_coupon = async (req: Request, res: Response) => {
+  const coupon = await Coupon.findById(req?.query?.id);
+
+  if (!coupon) {
+    res.status(404).json({
+      message: "Coupon with this ID doesn't exist",
+    });
+    return;
+  }
+
+  try {
+    await coupon.deleteOne();
+    res.json({
+      message: "Coupon successfully deleted",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+};
 
 export { get_coupons, add_coupon, update_coupon, delete_coupon };
