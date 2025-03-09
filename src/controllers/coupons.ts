@@ -17,8 +17,13 @@ const get_coupons = async (req: AuthenticatedRequest, res: Response) => {
     res.json(coupons);
   }
   if (req?.user?.role === "user") {
-    // const coupons = await Coupon.find({ createdBy: req?.user?.id });
-    res.json({ message: "Downloaded coupons coming soon." });
+    const user = await User.findById(req.user.id, {
+      downloadedCoupons: 1,
+    }).populate({
+      path: "downloadedCoupons",
+      select: "-__v -add_to_carousel",
+    });
+    res.json(user?.downloadedCoupons);
   }
 };
 
