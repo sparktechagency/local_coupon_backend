@@ -1,6 +1,7 @@
 import {
   add_coupon,
   delete_coupon,
+  download_coupon,
   get_coupons,
   update_coupon,
 } from "@controllers/coupons";
@@ -21,6 +22,8 @@ router.patch(
   update_coupon
 );
 router.delete("/", authorize(["business"]), delete_coupon);
+
+router.get("/download", authorize(["user"]), download_coupon);
 
 // [user] -> download coupon
 // [user] -> remove from downloaded coupon

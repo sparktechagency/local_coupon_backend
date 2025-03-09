@@ -3,7 +3,7 @@ import { AccessTokenPayload } from "@utils/jwt";
 import validateCoupon from "@utils/validateCoupon";
 import validateRequiredFields from "@utils/validateFields";
 import { Request, Response } from "express";
-import { Coupon } from "src/db";
+import { Coupon, User } from "src/db";
 interface AuthenticatedRequest extends Request {
   user?: AccessTokenPayload;
 }
@@ -146,7 +146,9 @@ const update_coupon = async (req: AuthenticatedRequest, res: Response) => {
   });
 
   if (couponError) {
-    res.status(400).json({ message: "This coupon type doesn't support the provided fields" });
+    res.status(400).json({
+      message: "This coupon type doesn't support the provided fields",
+    });
     return;
   }
 
@@ -224,4 +226,37 @@ const delete_coupon = async (req: Request, res: Response) => {
   }
 };
 
-export { get_coupons, add_coupon, update_coupon, delete_coupon };
+const download_coupon = async (req: AuthenticatedRequest, res: Response) => {
+  const user = await User.findById(req?.user?.id);
+  const coupon = await Coupon.findById(req?.query?.id);
+
+  if (!coupon) {
+    res.status(404).json({ message: "Coupon with this ID doesn't exist" });
+    return;
+  }
+
+  if (user?.downloadedCoupons.includes(coupon._id)) {
+    res.status(400).json({
+      message: "This coupon is already downloaded",
+    });
+    return;
+  }
+
+  try {
+    await user?.updateOne({ $push: { downloadedCoupons: coupon._id } });
+    res.json({ message: "Coupon downloaded successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+};
+
+export {
+  get_coupons,
+  add_coupon,
+  update_coupon,
+  delete_coupon,
+  download_coupon,
+};

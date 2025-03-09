@@ -75,6 +75,10 @@ const User = new Schema(
       type: Date,
       default: null,
     },
+    downloadedCoupons: {
+      type: [Schema.Types.ObjectId],
+      ref: "Coupon",
+    },
   },
   { timestamps: true }
 );
