@@ -4,7 +4,7 @@ import validateCoupon from "@utils/validateCoupon";
 import validateRequiredFields from "@utils/validateFields";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import { Coupon, User } from "src/db";
+import { Coupon, User, Visit } from "src/db";
 interface AuthenticatedRequest extends Request {
   user?: AccessTokenPayload;
 }
@@ -283,6 +283,7 @@ const download_coupon = async (req: AuthenticatedRequest, res: Response) => {
 
   try {
     await user?.updateOne({ $push: { downloadedCoupons: coupon._id } });
+    await Visit.create({ visitor: user?._id, coupon: coupon._id });
     res.json({ message: "Coupon downloaded successfully" });
   } catch (error) {
     console.log(error);

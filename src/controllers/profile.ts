@@ -90,8 +90,21 @@ const get_business_profile = async (
 };
 
 const get_last_visits = async (req: AuthenticatedRequest, res: Response) => {
-  const visits = await Visit.find({ visitor: req.user?.id });
-  res.json(visits);
+  try {
+    const visits = await Visit.find(
+      { visitor: req.user?.id },
+      { visitor: 0, __v: 0 }
+    ).populate({
+      path: "coupon",
+      select: "-__v -add_to_carousel",
+    });
+    res.json(visits);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
 };
 
 const update_profile = async (req: AuthenticatedRequest, res: Response) => {
