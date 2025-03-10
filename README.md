@@ -22,7 +22,7 @@ Backend: Node.js, Express, MongoDB
 
 
 ## Roadmap
-- get business profile
+<!-- - get business profile -->
 - [user] last visited
 - [business profile] home page analytics
 - get qr code

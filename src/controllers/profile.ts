@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { AccessTokenPayload } from "@utils/jwt";
-import { User } from "src/db";
+import { Coupon, User } from "src/db";
 import parseDate from "@utils/parseDate";
 import uploadService from "@services/uploadService";
 import { comparePassword, plainPasswordToHash } from "@utils/passwordHashing";
@@ -56,6 +56,34 @@ const get_profile = async (req: AuthenticatedRequest, res: Response) => {
   }
 
   res.status(200).json(responsePayload);
+};
+
+const get_business_profile = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const business_profile_id = req.query?.id;
+  const user = await User.findById(business_profile_id, {
+    companyName: 1,
+    companyAddress: 1,
+    socials: 1,
+    location: 1,
+  });
+  const coupons = await Coupon.find(
+    {
+      createdBy: business_profile_id,
+    },
+    { __v: 0 }
+  ).populate({
+    path: "category",
+    select: "-__v -add_to_carousel",
+  });
+  if (!user || user.isDeleted) {
+    res.status(404).json({ message: "User not found" });
+    return;
+  }
+
+  res.status(200).json({ user, coupons });
 };
 
 const update_profile = async (req: AuthenticatedRequest, res: Response) => {
@@ -215,6 +243,7 @@ const change_password = async (req: AuthenticatedRequest, res: Response) => {
 
 export {
   get_profile,
+  get_business_profile,
   update_profile,
   update_picture,
   delete_profile,
