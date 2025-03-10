@@ -86,6 +86,8 @@ const get_business_profile = async (
     return;
   }
 
+  await Visit.create({ visitor: req.user?.id, business: profile._id });
+
   res.status(200).json({ profile, categories, coupons });
 };
 

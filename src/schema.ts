@@ -243,7 +243,10 @@ const Visit = new Schema({
   coupon: {
     type: Schema.Types.ObjectId,
     ref: "Coupon",
-    required: true,
+  },
+  business: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
   },
   lastVisitedAt: {
     type: Date,
