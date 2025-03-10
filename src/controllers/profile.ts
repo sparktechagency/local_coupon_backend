@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { AccessTokenPayload } from "@utils/jwt";
-import { Coupon, User } from "src/db";
+import { Categories, Coupon, User, Visit } from "src/db";
 import parseDate from "@utils/parseDate";
 import uploadService from "@services/uploadService";
 import { comparePassword, plainPasswordToHash } from "@utils/passwordHashing";
@@ -63,7 +63,7 @@ const get_business_profile = async (
   res: Response
 ) => {
   const business_profile_id = req.query?.id;
-  const user = await User.findById(business_profile_id, {
+  const profile = await User.findById(business_profile_id, {
     companyName: 1,
     companyAddress: 1,
     socials: 1,
@@ -74,16 +74,24 @@ const get_business_profile = async (
       createdBy: business_profile_id,
     },
     { __v: 0 }
-  ).populate({
-    path: "category",
-    select: "-__v -add_to_carousel",
-  });
-  if (!user || user.isDeleted) {
-    res.status(404).json({ message: "User not found" });
+  );
+
+  const category_ids = coupons.map((coupon) => coupon.category);
+  const categories = await Categories.find(
+    { _id: { $in: category_ids } },
+    { __v: 0 }
+  );
+  if (!profile || profile.isDeleted) {
+    res.status(404).json({ message: "Profile not found" });
     return;
   }
 
-  res.status(200).json({ user, coupons });
+  res.status(200).json({ profile, categories, coupons });
+};
+
+const get_last_visits = async (req: AuthenticatedRequest, res: Response) => {
+  const visits = await Visit.find({ visitor: req.user?.id });
+  res.json(visits);
 };
 
 const update_profile = async (req: AuthenticatedRequest, res: Response) => {
@@ -244,6 +252,7 @@ const change_password = async (req: AuthenticatedRequest, res: Response) => {
 export {
   get_profile,
   get_business_profile,
+  get_last_visits,
   update_profile,
   update_picture,
   delete_profile,

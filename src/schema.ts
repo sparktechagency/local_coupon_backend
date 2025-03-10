@@ -234,6 +234,23 @@ const Coupon = new Schema({
   },
 });
 
+const Visit = new Schema({
+  visitor: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  coupon: {
+    type: Schema.Types.ObjectId,
+    ref: "Coupon",
+    required: true,
+  },
+  lastVisitedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
 export {
   User,
   OTP,
@@ -244,4 +261,5 @@ export {
   Privacy,
   Categories,
   Coupon,
+  Visit,
 };
