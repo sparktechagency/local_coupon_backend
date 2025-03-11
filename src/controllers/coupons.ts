@@ -4,7 +4,9 @@ import validateCoupon from "@utils/validateCoupon";
 import validateRequiredFields from "@utils/validateFields";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import { Coupon, User, Visit } from "src/db";
+import { Coupon, DownloadedCoupon, User, Visit } from "src/db";
+import qr from "qrcode";
+
 interface AuthenticatedRequest extends Request {
   user?: AccessTokenPayload;
 }
@@ -18,13 +20,16 @@ const get_coupons = async (req: AuthenticatedRequest, res: Response) => {
     res.json(coupons);
   }
   if (req?.user?.role === "user") {
-    const user = await User.findById(req.user.id, {
-      downloadedCoupons: 1,
-    }).populate({
-      path: "downloadedCoupons",
+    const downloadedCoupons = await DownloadedCoupon.find(
+      {
+        user: req.user.id,
+      },
+      { __v: 0 }
+    ).populate({
+      path: "coupon",
       select: "-__v -add_to_carousel",
     });
-    res.json(user?.downloadedCoupons);
+    res.json(downloadedCoupons);
   }
 };
 
@@ -241,24 +246,18 @@ const delete_coupon = async (req: AuthenticatedRequest, res: Response) => {
   }
 
   if (req.user?.role === "user") {
-    const user = await User.findById(req.user?.id);
-
-    if (
-      !user?.downloadedCoupons.includes(
-        new mongoose.Types.ObjectId(req?.query?.id as string)
-      )
-    ) {
+    const downloadedCoupon = await DownloadedCoupon.findOne({
+      coupon: req.query.id,
+      user: req.user.id,
+    });
+    if (!downloadedCoupon) {
       res
         .status(400)
         .json({ message: "Coupon ID not found in downloaded coupons" });
       return;
     }
 
-    await User.findOneAndUpdate(
-      { _id: req.user?.id },
-      { $pull: { downloadedCoupons: req.query.id } },
-      { new: true }
-    );
+    await downloadedCoupon.deleteOne();
     res.json({
       message: "Coupon successfully removed from downloaded coupons",
     });
@@ -274,7 +273,12 @@ const download_coupon = async (req: AuthenticatedRequest, res: Response) => {
     return;
   }
 
-  if (user?.downloadedCoupons.includes(coupon._id)) {
+  const downloadedCoupon = await DownloadedCoupon.findOne({
+    user: user?._id,
+    coupon: coupon._id,
+  });
+
+  if (downloadedCoupon) {
     res.status(400).json({
       message: "This coupon is already downloaded",
     });
@@ -282,7 +286,7 @@ const download_coupon = async (req: AuthenticatedRequest, res: Response) => {
   }
 
   try {
-    await user?.updateOne({ $push: { downloadedCoupons: coupon._id } });
+    await DownloadedCoupon.create({ coupon: coupon._id, user: user?._id });
     await Visit.create({ visitor: user?._id, coupon: coupon._id });
     res.json({ message: "Coupon downloaded successfully" });
   } catch (error) {
@@ -293,10 +297,22 @@ const download_coupon = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
+const get_qr_code = async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.query || {};
+
+  if (typeof id !== "string") {
+    res.status(400).json({ message: "Invalid ID" });
+    return;
+  }
+  const qrCodeImage = await qr.toDataURL(id);
+  res.send(`<img src="${qrCodeImage}" alt="QR Code"/>`);
+};
+
 export {
   get_coupons,
   add_coupon,
   update_coupon,
   delete_coupon,
   download_coupon,
+  get_qr_code,
 };

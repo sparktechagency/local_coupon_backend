@@ -75,9 +75,29 @@ const User = new Schema(
       type: Date,
       default: null,
     },
-    downloadedCoupons: {
-      type: [Schema.Types.ObjectId],
+  },
+  { timestamps: true }
+);
+
+const DownloadedCoupon = new Schema(
+  {
+    coupon: {
+      type: Schema.Types.ObjectId,
       ref: "Coupon",
+      required: true,
+    },
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    redeemed: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    redeemedAt: {
+      type: Date,
     },
   },
   { timestamps: true }
@@ -265,4 +285,5 @@ export {
   Categories,
   Coupon,
   Visit,
+  DownloadedCoupon,
 };

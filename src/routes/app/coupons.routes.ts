@@ -3,6 +3,7 @@ import {
   delete_coupon,
   download_coupon,
   get_coupons,
+  get_qr_code,
   update_coupon,
 } from "@controllers/coupons";
 import authorize from "@middleware/auth";
@@ -24,6 +25,7 @@ router.patch(
 router.delete("/", authorize(["user", "business"]), delete_coupon);
 
 router.get("/download", authorize(["user"]), download_coupon);
+router.get("/qr-code", get_qr_code);
 
 // [user] -> download coupon
 // [user] -> remove from downloaded coupon

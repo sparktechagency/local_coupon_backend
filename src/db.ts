@@ -10,6 +10,7 @@ import {
   Categories as CategoriesSchema,
   Coupon as CouponSchema,
   Visit as VisitSchema,
+  DownloadedCoupon as DownloadedCouponSchema,
 } from "src/schema";
 
 const startDB = async () => {
@@ -27,6 +28,7 @@ const Privacy = model("Privacy", PrivacySchema);
 const Categories = model("Categories", CategoriesSchema);
 const Coupon = model("Coupon", CouponSchema);
 const Visit = model("Visit", VisitSchema);
+const DownloadedCoupon = model("DownloadedCoupon", DownloadedCouponSchema);
 
 export {
   User,
@@ -39,5 +41,6 @@ export {
   Categories,
   Coupon,
   Visit,
+  DownloadedCoupon,
   startDB,
 };
