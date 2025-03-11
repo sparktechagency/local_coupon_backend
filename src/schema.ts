@@ -252,6 +252,10 @@ const Coupon = new Schema({
     required: true,
     default: false,
   },
+  redeemCount: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const Visit = new Schema({

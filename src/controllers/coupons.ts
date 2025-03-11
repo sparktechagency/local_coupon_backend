@@ -6,6 +6,7 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { Coupon, DownloadedCoupon, User, Visit } from "src/db";
 import qr from "qrcode";
+import { JwtPayload, sign, verify } from "jsonwebtoken";
 
 interface AuthenticatedRequest extends Request {
   user?: AccessTokenPayload;
@@ -25,10 +26,12 @@ const get_coupons = async (req: AuthenticatedRequest, res: Response) => {
         user: req.user.id,
       },
       { __v: 0 }
-    ).populate({
-      path: "coupon",
-      select: "-__v -add_to_carousel",
-    });
+    )
+      .populate({
+        path: "coupon",
+        select: "-__v -add_to_carousel",
+      })
+      .sort({ redeemed: 1 });
     res.json(downloadedCoupons);
   }
 };
@@ -300,12 +303,159 @@ const download_coupon = async (req: AuthenticatedRequest, res: Response) => {
 const get_qr_code = async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.query || {};
 
-  if (typeof id !== "string") {
-    res.status(400).json({ message: "Invalid ID" });
+  const downloadedCoupon = await DownloadedCoupon.findById(id);
+
+  if (!downloadedCoupon) {
+    res.status(400).json({ message: "The coupon is invalid" });
     return;
   }
-  const qrCodeImage = await qr.toDataURL(id);
-  res.send(`<img src="${qrCodeImage}" alt="QR Code"/>`);
+
+  try {
+    const payload = {
+      downloadedCouponId: downloadedCoupon._id,
+    };
+
+    const token = sign(payload, process.env.ACCESS_TOKEN_SECRET || "secret", {
+      expiresIn: "5m",
+    });
+
+    const verificationURL = `${process.env.BASE_URL}/coupons/redeem-coupon?token=${token}`;
+
+    const qrCodeImage = await qr.toDataURL(verificationURL);
+
+    res.send(`<img src="${qrCodeImage}" alt="QR Code"/>`);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Failed to generate QR code" });
+  }
+};
+
+const redeem_coupon = async (req: Request, res: Response) => {
+  const { token } = req.query;
+
+  const pageTemplate = (title: string, message: string, isSuccess: boolean) => {
+    return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${title}</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: ${isSuccess ? "#2e8b57" : "#ff4d4d"};
+            text-align: center;
+          }
+          .container {
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            max-width: 400px;
+            width: 100%;
+          }
+          h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+          }
+          p {
+            font-size: 16px;
+            line-height: 1.5;
+          }
+          .button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: ${isSuccess ? "#2e8b57" : "#ff4d4d"};
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+          }
+          .button:hover {
+            background-color: ${isSuccess ? "#2d7b4f" : "#e04646"};
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>${title}</h1>
+          <p>${message}</p>
+        </div>
+      </body>
+      </html>
+    `;
+  };
+
+  if (typeof token !== "string") {
+    res.send(pageTemplate("Error", "Invalid coupon ID", false));
+    return;
+  }
+
+  let decode;
+
+  try {
+    decode = verify(token, process.env.ACCESS_TOKEN_SECRET || "");
+  } catch (error) {
+    console.log(error);
+    res.send(pageTemplate("Error", "Invalid coupon ID", false));
+    return;
+  }
+
+  const downloadedCoupon = await DownloadedCoupon.findById(
+    (decode as JwtPayload & { downloadedCouponId: string }).downloadedCouponId
+  );
+
+  // Check if the coupon exists
+  if (!downloadedCoupon) {
+    res.status(404).send(pageTemplate("Error", "Coupon not found", false));
+  }
+
+  const coupon = await Coupon.findById(downloadedCoupon?.coupon._id);
+
+  if (!coupon) {
+    res.status(404).send(pageTemplate("Error", "Coupon not found", false));
+    return;
+  }
+
+  // Check if the coupon has expired
+  const currentDate = new Date();
+  if (coupon.end < currentDate) {
+    res
+      .status(400)
+      .send(pageTemplate("Expired", "This coupon has expired", false));
+  }
+
+  if (downloadedCoupon?.redeemed) {
+    res
+      .status(400)
+      .send(
+        pageTemplate(
+          "Already Redeemed",
+          "This coupon has already been redeemed",
+          false
+        )
+      );
+  }
+
+  if (downloadedCoupon) {
+    downloadedCoupon.redeemed = true;
+    downloadedCoupon.redeemedAt = new Date();
+    await downloadedCoupon.save();
+  }
+
+  coupon.redeemCount += 1;
+  await coupon.save();
+
+  res.send(pageTemplate("Success", "Coupon successfully redeemed!", true));
 };
 
 export {
@@ -315,4 +465,5 @@ export {
   delete_coupon,
   download_coupon,
   get_qr_code,
+  redeem_coupon,
 };
