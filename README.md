@@ -24,10 +24,10 @@ Backend: Node.js, Express, MongoDB
 ## Roadmap
 <!-- - get business profile -->
 <!-- - [user] last visited -->
+<!-- - get qr code -->
+<!-- - switch account to/from business/user -->
 - [business profile] home page analytics
-- get qr code
 - qr code scan analytics
-- switch account to/from business/user
 - notification system
 - referral system (if someone invites 20 people to the app, they get 1 month extra free trial)
 

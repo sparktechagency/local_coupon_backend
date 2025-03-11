@@ -5,6 +5,7 @@ import validateRequiredFields from "@utils/validateFields";
 import { plainPasswordToHash, comparePassword } from "@utils/passwordHashing";
 import checkUserExists from "@utils/checkUserExists";
 import {
+  AccessTokenPayload,
   generateAccessToken,
   generatePasswordResetToken,
   generateRefreshToken,
@@ -369,6 +370,31 @@ const apple_login = async (req: Request, res: Response) => {
   }
 };
 
+interface AuthenticatedRequest extends Request {
+  user?: AccessTokenPayload;
+}
+
+const switch_account = async (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user || !req.user.id || !req.user.email || !req.user.role) {
+    res.status(400).json({ message: "Invalid user data" });
+    return;
+  }
+
+  const user = await User.findById(req.user.id);
+
+  if (user?.role !== "business") {
+    res.json({ message: "Unauthorized" });
+    return;
+  }
+
+  const accessToken = generateAccessToken(
+    req.user.id,
+    req.user.email,
+    req.user.role === "business" ? "user" : "business"
+  );
+  res.json({ token: accessToken });
+};
+
 export {
   signup,
   verify_otp,
@@ -379,4 +405,5 @@ export {
   google_login,
   facebook_login,
   apple_login,
+  switch_account,
 };

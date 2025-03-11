@@ -9,7 +9,9 @@ import {
   google_login,
   refresh_token,
   apple_login,
+  switch_account,
 } from "@controllers/auth";
+import authorize from "@middleware/auth";
 
 const router = Router();
 
@@ -22,5 +24,6 @@ router.post("/refresh-token", refresh_token);
 router.post("/google-login", google_login);
 router.post("/facebook-login", facebook_login);
 router.post("/apple-login", apple_login);
+router.post("/switch-account", authorize(["user", "business"]), switch_account);
 
 export default router;
