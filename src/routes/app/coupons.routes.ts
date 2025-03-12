@@ -1,5 +1,6 @@
 import {
   add_coupon,
+  analytics,
   delete_coupon,
   download_coupon,
   get_coupons,
@@ -27,8 +28,9 @@ router.patch(
 router.delete("/", authorize(["user", "business"]), delete_coupon);
 
 router.get("/download", authorize(["user"]), download_coupon);
-router.get("/qr-code", get_qr_code);
+router.get("/qr-code", authorize(["user"]), get_qr_code);
 router.get("/redeem-coupon", redeem_coupon);
-router.post("/share-coupon", share_coupon);
+router.post("/share-coupon", authorize(["user"]), share_coupon);
+router.get("/analytics", authorize(["business"]), analytics);
 
 export default router;

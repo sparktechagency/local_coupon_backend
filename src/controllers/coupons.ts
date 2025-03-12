@@ -484,6 +484,84 @@ const share_coupon = async (req: Request, res: Response) => {
   res.json({ business_id: coupon.createdBy._id });
 };
 
+type TypeView = "week" | "month" | "year";
+
+const analytics = async (req: AuthenticatedRequest, res: Response) => {
+  const type = req.query.type as TypeView;
+
+  if (!["week", "month", "year"].includes(type)) {
+    res.status(400).json({ error: "Invalid type parameter" });
+    return;
+  }
+
+  const coupons = await Coupon.find({ createdBy: req?.user?.id });
+  const downloadedCoupons = await DownloadedCoupon.find({
+    coupon: { $in: coupons.map((c) => c._id) },
+  });
+
+  const groupedData: { [key: string]: number } = {};
+
+  // Initialize the data structure with default values
+  if (type === "week") {
+    // Days of the week (with default 0 count)
+    const daysOfWeek = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+    daysOfWeek.forEach((day) => {
+      groupedData[day] = 0;
+    });
+  } else if (type === "month") {
+    // Weeks of the month (with default 0 count)
+    const weeksOfMonth = ["week 1", "week 2", "week 3", "week 4", "week 5"];
+    weeksOfMonth.forEach((week) => {
+      groupedData[week] = 0;
+    });
+  } else if (type === "year") {
+    // Months of the year (with default 0 count)
+    const monthsOfYear = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    monthsOfYear.forEach((month) => {
+      groupedData[month] = 0;
+    });
+  }
+
+  // Process the downloaded coupons based on the selected type (week, month, or year)
+  downloadedCoupons.forEach((downloadedCoupon) => {
+    const redeemedAt = new Date(downloadedCoupon.createdAt);
+
+    if (type === "week") {
+      // Group by day of the week
+      const dayOfWeek = redeemedAt
+        .toLocaleString("en-US", { weekday: "short" })
+        .toLowerCase(); // sun, mon, etc.
+      groupedData[dayOfWeek] = (groupedData[dayOfWeek] || 0) + 1;
+    } else if (type === "month") {
+      // Group by week of the month
+      const weekOfMonth = Math.ceil((redeemedAt.getDate() - 1) / 7) + 1; // Week 1, Week 2, etc.
+      const weekKey = `week ${weekOfMonth}`;
+      groupedData[weekKey] = (groupedData[weekKey] || 0) + 1;
+    } else if (type === "year") {
+      // Group by month of the year
+      const monthOfYear = redeemedAt.toLocaleString("en-US", {
+        month: "short",
+      }); // Jan, Feb, etc.
+      groupedData[monthOfYear] = (groupedData[monthOfYear] || 0) + 1;
+    }
+  });
+
+  res.json({ groupedData, type });
+};
+
 export {
   get_coupons,
   add_coupon,
@@ -493,4 +571,5 @@ export {
   get_qr_code,
   redeem_coupon,
   share_coupon,
+  analytics,
 };
