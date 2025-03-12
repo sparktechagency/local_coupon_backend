@@ -35,19 +35,85 @@ Backend: Node.js, Express, MongoDB
 - coupon filters - category & location filters
 
 
+### API Endpoints
 
+## Auth
+- ✅ login
+- ✅ google-login
+- ✅ apple-login
+- ✅ fb-login
+- ✅ refresh token
+- ✅ forgot-password
+- ✅ reset-password
+- ✅ signup
+- ✅ verify-otp
+- ✅ switch-account
 
+## Stripe
+- ✅ create-payment
 
+## Home/Explore
+- [GET] home?query&category&location
+    - Response: 
+    ```
+    {
+        categories: [],
+        carousel: [],
+        coupons: []
+    }
+    ```
+- business-analytics
 
+## Coupons
+- ✅ get-coupons
+- ✅ delete-coupon
+- ✅ download-coupon
+- ✅ add-coupon
+- ✅ update-coupon
+- ✅ qr-code
+- ✅ redeem-coupon
+- share-coupon
+- coupon-analytics
 
+## Profile
+- ✅ get-profile
+- ✅ get-business-profile
+- ✅ last-visit
+- ✅ update-profile / update-picture
+- ✅ delete-profile
+- ✅ change-password
 
+## Legal
+- ✅ faqs
+- ✅ terms
+- ✅ privacy
 
+## Contact Us
+- ✅ contact-us
 
+## Referral System
+- invite-friends
 
+## Notification System
+- ws
 
-
-
-
-
+## Admin Panel
+- dashboard
+- recent-transactions
+- business-owners
+- users
+- ban/unban users
+- ✅ add-subscription
+- get-subscriptions
+- update-subscription
+- delete-subscription
+- premium-subscribers
+- ✅ get-categories
+- ✅ add-category
+- ✅ update-category
+- ✅ delete-category
+- ✅ update-faqs
+- ✅ update-terms
+- ✅ update-privacy
 
 
