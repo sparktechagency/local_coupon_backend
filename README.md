@@ -72,7 +72,7 @@ Backend: Node.js, Express, MongoDB
 - ✅ update-coupon
 - ✅ qr-code
 - ✅ redeem-coupon
-- share-coupon
+- ✅ share-coupon
 - coupon-analytics
 
 ## Profile

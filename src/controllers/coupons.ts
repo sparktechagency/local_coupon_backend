@@ -3,7 +3,7 @@ import { AccessTokenPayload } from "@utils/jwt";
 import validateCoupon from "@utils/validateCoupon";
 import validateRequiredFields from "@utils/validateFields";
 import { Request, Response } from "express";
-import mongoose from "mongoose";
+import mongoose, { isObjectIdOrHexString } from "mongoose";
 import { Coupon, DownloadedCoupon, User, Visit } from "src/db";
 import qr from "qrcode";
 import { JwtPayload, sign, verify } from "jsonwebtoken";
@@ -458,6 +458,32 @@ const redeem_coupon = async (req: Request, res: Response) => {
   res.send(pageTemplate("Success", "Coupon successfully redeemed!", true));
 };
 
+const share_coupon = async (req: Request, res: Response) => {
+  const { couponId } = req.body || {};
+
+  const error = validateRequiredFields({ couponId });
+  if (error) {
+    res.status(400).json({ error });
+    return;
+  }
+
+  if (!isObjectIdOrHexString(couponId)) {
+    res.status(400).json({ error: "Invalid Id" });
+    return;
+  }
+
+  const coupon = await Coupon.findById(couponId);
+
+  if (!coupon) {
+    res.status(404).json({ error: "Coupon not found" });
+    return;
+  }
+
+  coupon.shareCount += 1;
+  await coupon.save();
+  res.json({ business_id: coupon.createdBy._id });
+};
+
 export {
   get_coupons,
   add_coupon,
@@ -466,4 +492,5 @@ export {
   download_coupon,
   get_qr_code,
   redeem_coupon,
+  share_coupon,
 };

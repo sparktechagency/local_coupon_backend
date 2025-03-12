@@ -5,6 +5,7 @@ import {
   get_coupons,
   get_qr_code,
   redeem_coupon,
+  share_coupon,
   update_coupon,
 } from "@controllers/coupons";
 import authorize from "@middleware/auth";
@@ -28,7 +29,6 @@ router.delete("/", authorize(["user", "business"]), delete_coupon);
 router.get("/download", authorize(["user"]), download_coupon);
 router.get("/qr-code", get_qr_code);
 router.get("/redeem-coupon", redeem_coupon);
-
-// [business] -> coupon performance analytics
+router.post("/share-coupon", share_coupon);
 
 export default router;

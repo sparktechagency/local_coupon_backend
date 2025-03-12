@@ -256,6 +256,10 @@ const Coupon = new Schema({
     type: Number,
     default: 0,
   },
+  shareCount: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const Visit = new Schema({
