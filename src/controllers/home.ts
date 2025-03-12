@@ -1,11 +1,41 @@
 import { AccessTokenPayload } from "@utils/jwt";
 import { Request, Response } from "express";
-import { Coupon, DownloadedCoupon, Visit } from "src/db";
+import { Categories, Coupon, DownloadedCoupon, Visit } from "src/db";
 
 interface AuthenticatedRequest extends Request {
   user?: AccessTokenPayload;
 }
-const home = async (req: AuthenticatedRequest, res: Response) => {};
+const home = async (req: AuthenticatedRequest, res: Response) => {
+  const { query, category, location } = req.query || {};
+  let categories;
+  if (!category) {
+    categories = await Categories.find({}, { __v: 0 });
+  }
+
+  const couponsFromDB = await Coupon.find({
+    ...(query && { "createdBy.companyName": new RegExp(query as string, "i") }),
+    ...(category && { category }),
+    ...(location && { "createdBy.location": location }),
+  }).populate("createdBy");
+
+  // Basic recommendation algorithm based on the number of downloads and shares
+  const secureCoupons = couponsFromDB.map((coupon) => ({
+    ...coupon.toObject(),
+    createdBy: undefined,
+  }));
+
+  // Sort coupons by a simple recommendation score
+  secureCoupons.sort((a, b) => {
+    const scoreA = (a.redeemCount || 0) + (a.shareCount || 0);
+    const scoreB = (b.redeemCount || 0) + (b.shareCount || 0);
+    return scoreB - scoreA;
+  });
+
+  const carousel = secureCoupons.filter((coupon) => coupon.add_to_carousel);
+  const coupons = secureCoupons.filter((coupon) => !coupon.add_to_carousel);
+
+  res.json({ categories, carousel, coupons });
+};
 
 const analytics = async (req: AuthenticatedRequest, res: Response) => {
   const coupons = await Coupon.find({ createdBy: req.user?.id });
