@@ -34,6 +34,11 @@ const userRoutes = [
     // auth middlewares for this route is in the coupons.routes.ts file,
   },
   {
+    path: "/home",
+    router: userRouter.homeRoutes,
+    // auth middlewares for this route is in the home.routes.ts file,
+  },
+  {
     path: "/categories",
     router: userRouter.categoriesRoutes,
     middleware: authorize(["user", "business"]),

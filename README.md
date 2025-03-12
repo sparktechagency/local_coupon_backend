@@ -62,7 +62,7 @@ Backend: Node.js, Express, MongoDB
         coupons: []
     }
     ```
-- business-analytics
+- ✅ business-analytics
 
 ## Coupons
 - ✅ get-coupons
@@ -73,7 +73,7 @@ Backend: Node.js, Express, MongoDB
 - ✅ qr-code
 - ✅ redeem-coupon
 - ✅ share-coupon
-- coupon-analytics
+- ✅ coupon-analytics
 
 ## Profile
 - ✅ get-profile

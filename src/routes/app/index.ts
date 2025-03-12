@@ -5,6 +5,7 @@ import legalRoutes from "./legal.routes";
 import contactUsRoutes from "./contact-us.routes";
 import couponsRoutes from "./coupons.routes";
 import categoriesRoutes from "./categories.routes";
+import homeRoutes from "./home.routes";
 
 export {
   authRoutes,
@@ -13,5 +14,6 @@ export {
   legalRoutes,
   contactUsRoutes,
   couponsRoutes,
-  categoriesRoutes
+  categoriesRoutes,
+  homeRoutes,
 };
