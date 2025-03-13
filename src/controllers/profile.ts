@@ -264,6 +264,14 @@ const change_password = async (req: AuthenticatedRequest, res: Response) => {
   res.status(200).json({ message: "Password changed successfully" });
 };
 
+const invite = async (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user?.id) {
+    res.status(400).json({ message: "User ID is undefined" });
+    return;
+  }
+  res.json({ invite_id: btoa(req.user?.id) });
+};
+
 export {
   get_profile,
   get_business_profile,
@@ -272,4 +280,5 @@ export {
   update_picture,
   delete_profile,
   change_password,
+  invite,
 };

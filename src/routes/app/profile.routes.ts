@@ -4,6 +4,7 @@ import {
   get_business_profile,
   get_last_visits,
   get_profile,
+  invite,
   update_picture,
   update_profile,
 } from "@controllers/profile";
@@ -21,5 +22,6 @@ router.put("/", update_profile);
 router.put("/picture", upload.single("picture"), update_picture);
 router.delete("/", delete_profile);
 router.post("/change-password", change_password);
+router.get("/invite", invite);
 
 export default router;

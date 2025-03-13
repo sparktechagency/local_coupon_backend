@@ -75,6 +75,11 @@ const User = new Schema(
       type: Date,
       default: null,
     },
+    invitedUsers: {
+      type: [Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+    },
   },
   { timestamps: true }
 );

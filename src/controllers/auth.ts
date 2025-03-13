@@ -27,6 +27,7 @@ const signup = async (req: Request, res: Response) => {
     companyName,
     companyAddress,
     socials,
+    invite_id,
   } = req?.body || {};
 
   const error = validateRequiredFields({ name, email, phone, password });
@@ -58,7 +59,7 @@ const signup = async (req: Request, res: Response) => {
   }
 
   const passwordHash = await plainPasswordToHash(password);
-  await User.create({ name, email, phone, passwordHash, role });
+  const newUser = await User.create({ name, email, phone, passwordHash, role });
   if (role === "business") {
     await User.updateOne(
       { email },
@@ -66,6 +67,24 @@ const signup = async (req: Request, res: Response) => {
     );
   }
   await sendOTP(email, "signup");
+
+  if (invite_id) {
+    const invite_id_decoded = atob(invite_id);
+    const oldUser = await User.findById(invite_id_decoded);
+    await oldUser?.updateOne({
+      $push: { invitedUsers: newUser._id },
+    });
+    if (oldUser && oldUser.invitedUsers.length % 10 === 0) {
+      if (!oldUser.isSubscribed) {
+        await oldUser?.updateOne({
+          isSubscribed: true,
+        });
+      }
+      await oldUser?.updateOne({
+        subscriptionExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      });
+    }
+  }
 
   res.status(200).json({ message: "OTP sent to email" });
 };
