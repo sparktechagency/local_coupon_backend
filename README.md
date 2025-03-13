@@ -88,7 +88,7 @@ Backend: Node.js, Express, MongoDB
 - ✅ contact-us
 
 ## Referral System
-- invite-friends
+- ✅ invite-friends
 
 ## Notification System
 - ws

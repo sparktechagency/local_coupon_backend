@@ -58,6 +58,10 @@ const adminRoutes = [
     path: "/categories",
     router: adminRouter.categoriesRoutes,
   },
+  {
+    path: "/panel",
+    router: adminRouter.panelRoutes,
+  },
 ];
 
 const registerUserRoutes = (app: any) => {
