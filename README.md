@@ -22,10 +22,6 @@ Backend: Node.js, Express, MongoDB
 
 
 ## Roadmap
-<!-- - get business profile -->
-<!-- - [user] last visited -->
-<!-- - get qr code -->
-<!-- - switch account to/from business/user -->
 - [business profile] home page analytics
 - qr code scan analytics
 - notification system
@@ -53,7 +49,7 @@ Backend: Node.js, Express, MongoDB
 - ✅ create-payment
 
 ## Home/Explore
-- [GET] home?query&category&location
+- ✅ [GET] home?query&category&location
     - Response: 
     ```
     {
