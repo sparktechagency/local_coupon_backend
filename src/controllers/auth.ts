@@ -16,8 +16,10 @@ import { OAuth2Client } from "google-auth-library";
 import axios from "axios";
 import { decode, JwtPayload } from "jsonwebtoken";
 import checkSubscriptionStatus from "@utils/checkSubscriptionStatus";
+import response_handler from "@utils/response_handler";
 
 const signup = async (req: Request, res: Response) => {
+  response_handler.setRes(res);
   const {
     name,
     email,
@@ -32,7 +34,7 @@ const signup = async (req: Request, res: Response) => {
 
   const error = validateRequiredFields({ name, email, phone, password });
   if (error) {
-    res.status(400).json({ message: error });
+    response_handler.status(400).json({ message: error });
     return;
   }
 
@@ -42,19 +44,19 @@ const signup = async (req: Request, res: Response) => {
       companyAddress,
     });
     if (error) {
-      res.status(400).json({ message: error });
+      response_handler.status(400).json({ message: error });
       return;
     }
   }
   const emailError = await checkUserExists("email", email);
   if (emailError) {
-    res.status(400).json({ message: emailError });
+    response_handler.status(400).json({ message: emailError });
     return;
   }
 
   const phoneError = await checkUserExists("phone", phone);
   if (phoneError) {
-    res.status(400).json({ message: phoneError });
+    response_handler.status(400).json({ message: phoneError });
     return;
   }
 
@@ -66,7 +68,8 @@ const signup = async (req: Request, res: Response) => {
       { $set: { companyName, companyAddress, socials } }
     );
   }
-  await sendOTP(email, "signup");
+  // await sendOTP(email, "signup");
+  const otp = await sendOTP(email, "signup");
 
   if (invite_id) {
     const invite_id_decoded = atob(invite_id);
@@ -86,66 +89,94 @@ const signup = async (req: Request, res: Response) => {
     }
   }
 
-  res.status(200).json({ message: "OTP sent to email" });
+  response_handler
+    .status(200)
+    .json({ message: "OTP sent to email", data: { otp } });
 };
 
 const verify_otp = async (req: Request, res: Response) => {
+  response_handler.setRes(res);
   const { email, otp } = req?.body || {};
 
   const error = validateRequiredFields({ email, otp });
   if (error) {
-    res.status(400).json({ message: error });
+    response_handler.status(400).json({ message: error });
     return;
   }
 
   try {
     const otpDoc = await verifyOTP(email, otp);
-    if (otpDoc.type === "signup") {
+
+    if (otpDoc.type === "signup" || otpDoc.type === "login") {
       await User.updateOne({ email }, { $set: { emailVerified: true } });
-      res.status(200).json({ message: "Email verified successfully" });
+      const user = await User.findOne({ email });
+
+      if (!user) {
+        response_handler.status(500).json({ message: "Internal Server Error" });
+        return;
+      }
+
+      const accessToken = generateAccessToken(
+        user._id.toString(),
+        user.email,
+        user.role
+      );
+      const refreshToken = generateRefreshToken(user.email, user.role, false);
+
+      response_handler
+        .status(200)
+        .json({
+          message: "Email verified successfully",
+          data: { accessToken, refreshToken, role: user.role },
+        });
       return;
     }
     if (otpDoc.type === "forgotPassword") {
       const passwordResetToken = generatePasswordResetToken(email);
-      res.status(200).json({
+      response_handler.status(200).json({
         message: "Password reset token generated",
-        passwordResetToken,
+        data: { passwordResetToken },
       });
       return;
     }
-    res.status(400).json({ message: "Invalid OTP" });
+    response_handler.status(400).json({ message: "Invalid OTP" });
     return;
   } catch (error) {
-    res.status(400).json({ message: (error as Error).message });
+    response_handler.status(400).json({ message: (error as Error).message });
     return;
   }
 };
 
 const forgot_password = async (req: Request, res: Response) => {
+  response_handler.setRes(res);
   const { email } = req?.body || {};
 
   const error = validateRequiredFields({ email });
   if (error) {
-    res.status(400).json({ message: error });
+    response_handler.status(400).json({ message: error });
     return;
   }
 
   const emailError = await checkUserExists("email", email);
   if (emailError) {
-    res.status(400).json({ message: emailError });
+    response_handler.status(400).json({ message: emailError });
     return;
   }
 
-  await sendOTP(email, "forgotPassword");
-  res.status(200).json({ message: "OTP sent to email" });
+  const otp = await sendOTP(email, "forgotPassword");
+  // await sendOTP(email, "forgotPassword");
+  response_handler
+    .status(200)
+    .json({ message: "OTP sent to email", data: { otp } });
 };
 
 const reset_password = async (req: Request, res: Response) => {
+  response_handler.setRes(res);
   const { email, password, token } = req?.body || {};
 
   const error = validateRequiredFields({ email, password, token });
   if (error) {
-    res.status(400).json({ message: error });
+    response_handler.status(400).json({ message: error });
     return;
   }
 
@@ -153,37 +184,47 @@ const reset_password = async (req: Request, res: Response) => {
     verifyPasswordResetToken(token);
     const passwordHash = await plainPasswordToHash(password);
     await User.updateOne({ email }, { $set: { passwordHash } });
-    res.status(200).json({ message: "Password reset successfully" });
+    response_handler
+      .status(200)
+      .json({ message: "Password reset successfully" });
     return;
   } catch (error) {
-    res.status(400).json({ message: (error as Error).message });
+    response_handler.status(400).json({ message: (error as Error).message });
     return;
   }
 };
 
 const login = async (req: Request, res: Response) => {
+  response_handler.setRes(res);
   const { email, password, remember_me } = req?.body || {};
 
   const error = validateRequiredFields({ email, password });
   if (error) {
-    res.status(400).json({ message: error });
+    response_handler.status(400).json({ message: error });
     return;
   }
 
   const user = await User.findOne({ email });
   if (!user || user.isDeleted) {
-    res.status(400).json({ message: "User not found" });
+    response_handler.status(400).json({ message: "User not found" });
+    return;
+  }
+
+  if (!user.emailVerified) {
+    response_handler.status(400).json({ message: "Email not verified" });
     return;
   }
 
   if (!user.passwordHash) {
-    res.status(400).json({ message: "Please login with social media" });
+    response_handler
+      .status(400)
+      .json({ message: "Please login with social media" });
     return;
   }
 
   const isPasswordCorrect = await comparePassword(password, user.passwordHash);
   if (!isPasswordCorrect) {
-    res.status(400).json({ message: "Invalid password" });
+    response_handler.status(400).json({ message: "Invalid password" });
     return;
   }
 
@@ -196,16 +237,18 @@ const login = async (req: Request, res: Response) => {
   );
   const refreshToken = generateRefreshToken(user.email, user.role, remember_me);
 
-  res
-    .status(200)
-    .json({ message: "Login successful", accessToken, refreshToken });
+  response_handler.status(200).json({
+    message: "Login successful",
+    data: { accessToken, refreshToken, role: user.role },
+  });
 };
 
 const refresh_token = async (req: Request, res: Response) => {
+  response_handler.setRes(res);
   const refreshToken = req.headers.authorization?.split(" ")[1];
 
   if (!refreshToken) {
-    res.status(400).json({ message: "Refresh token not found" });
+    response_handler.status(400).json({ message: "Refresh token not found" });
     return;
   }
 
@@ -213,7 +256,7 @@ const refresh_token = async (req: Request, res: Response) => {
     const decoded = verifyRefreshToken(refreshToken);
     const user = await User.findOne({ email: decoded.email });
     if (!user || user.isDeleted) {
-      res.status(400).json({ message: "User not found" });
+      response_handler.status(400).json({ message: "User not found" });
       return;
     }
     await checkSubscriptionStatus(user._id.toString());
@@ -222,13 +265,13 @@ const refresh_token = async (req: Request, res: Response) => {
       user.email,
       user.role
     );
-    res.status(200).json({
+    response_handler.status(200).json({
       message: "Token refreshed",
-      accessToken,
+      data: { accessToken },
     });
     return;
   } catch (error) {
-    res.status(400).json({ message: (error as Error).message });
+    response_handler.status(400).json({ message: (error as Error).message });
     return;
   }
 };
@@ -236,6 +279,7 @@ const refresh_token = async (req: Request, res: Response) => {
 const oAuthClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const google_login = async (req: Request, res: Response) => {
+  response_handler.setRes(res);
   const { token } = req?.body || {};
 
   const ticket = await oAuthClient.verifyIdToken({
@@ -244,7 +288,7 @@ const google_login = async (req: Request, res: Response) => {
   });
   const payload = ticket.getPayload();
   if (!payload) {
-    res.status(400).json({ message: "Invalid token" });
+    response_handler.status(400).json({ message: "Invalid token" });
     return;
   }
 
@@ -286,16 +330,19 @@ const google_login = async (req: Request, res: Response) => {
   );
   const refreshToken = generateRefreshToken(user.email, user.role, true);
 
-  res
+  response_handler
     .status(200)
-    .json({ message: "Login successful", accessToken, refreshToken });
+    .json({ message: "Login successful", data: { accessToken, refreshToken } });
 };
 
 const facebook_login = async (req: Request, res: Response) => {
+  response_handler.setRes(res);
   const { accessToken: fbAccessToken } = req?.body || {};
 
   if (!fbAccessToken) {
-    res.status(400).json({ message: "Facebook access token not found" });
+    response_handler
+      .status(400)
+      .json({ message: "Facebook access token not found" });
     return;
   }
 
@@ -336,20 +383,22 @@ const facebook_login = async (req: Request, res: Response) => {
     );
     const refreshToken = generateRefreshToken(user.email, user.role, true);
 
-    res
-      .status(200)
-      .json({ message: "Login successful", accessToken, refreshToken });
+    response_handler.status(200).json({
+      message: "Login successful",
+      data: { accessToken, refreshToken },
+    });
   } catch (error) {
-    res.status(400).json({ message: (error as Error).message });
+    response_handler.status(400).json({ message: (error as Error).message });
     return;
   }
 };
 
 const apple_login = async (req: Request, res: Response) => {
+  response_handler.setRes(res);
   const { token } = req.body;
 
   if (!token) {
-    res.status(400).json({ message: "Apple token not found" });
+    response_handler.status(400).json({ message: "Apple token not found" });
     return;
   }
 
@@ -357,7 +406,7 @@ const apple_login = async (req: Request, res: Response) => {
     const decoded = decode(token, { complete: true });
 
     if (!decoded) {
-      res.status(400).json({ message: "Invalid Apple token" });
+      response_handler.status(400).json({ message: "Invalid Apple token" });
       return;
     }
 
@@ -380,11 +429,14 @@ const apple_login = async (req: Request, res: Response) => {
     );
     const refreshToken = generateRefreshToken(user.email, user.role, true);
 
-    res
-      .status(200)
-      .json({ message: "Login successful", accessToken, refreshToken });
+    response_handler.status(200).json({
+      message: "Login successful",
+      data: { accessToken, refreshToken },
+    });
   } catch (error) {
-    res.status(401).json({ message: "Apple authentication failed" });
+    response_handler
+      .status(401)
+      .json({ message: "Apple authentication failed" });
     return;
   }
 };
@@ -394,15 +446,16 @@ interface AuthenticatedRequest extends Request {
 }
 
 const switch_account = async (req: AuthenticatedRequest, res: Response) => {
+  response_handler.setRes(res);
   if (!req.user || !req.user.id || !req.user.email || !req.user.role) {
-    res.status(400).json({ message: "Invalid user data" });
+    response_handler.status(400).json({ message: "Invalid user data" });
     return;
   }
 
   const user = await User.findById(req.user.id);
 
   if (user?.role !== "business") {
-    res.json({ message: "Unauthorized" });
+    response_handler.status(401).json({ message: "Unauthorized" });
     return;
   }
 
@@ -411,7 +464,28 @@ const switch_account = async (req: AuthenticatedRequest, res: Response) => {
     req.user.email,
     req.user.role === "business" ? "user" : "business"
   );
-  res.json({ token: accessToken });
+  response_handler.json({
+    data: { token: accessToken },
+    message: "Account switched successfully",
+  });
+};
+
+const resend_otp = async (req: Request, res: Response) => {
+  response_handler.setRes(res);
+  const { type, email } = req.body;
+
+  if (!type || !email) {
+    response_handler
+      .status(400)
+      .json({ message: "type and email fields are required" });
+    return;
+  }
+
+  const otp = await sendOTP(email, type);
+
+  response_handler
+    .status(200)
+    .json({ message: "OTP resent successfully", data: { otp } });
 };
 
 export {
@@ -425,4 +499,5 @@ export {
   facebook_login,
   apple_login,
   switch_account,
+  resend_otp,
 };
