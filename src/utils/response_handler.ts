@@ -30,7 +30,7 @@ const response_handler = (() => {
       const payload = {
         statusCode,
         message,
-        data,
+        data: data || null,
         success: getSuccessStatus(statusCode),
       };
 

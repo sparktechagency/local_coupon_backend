@@ -26,9 +26,6 @@ const signup = async (req: Request, res: Response) => {
     phone,
     password,
     role,
-    companyName,
-    companyAddress,
-    socials,
     invite_id,
   } = req?.body || {};
 
@@ -38,16 +35,6 @@ const signup = async (req: Request, res: Response) => {
     return;
   }
 
-  if (role === "business") {
-    const error = validateRequiredFields({
-      companyName,
-      companyAddress,
-    });
-    if (error) {
-      response_handler.status(400).json({ message: error });
-      return;
-    }
-  }
   const emailError = await checkUserExists("email", email);
   if (emailError) {
     response_handler.status(400).json({ message: emailError });
@@ -62,12 +49,6 @@ const signup = async (req: Request, res: Response) => {
 
   const passwordHash = await plainPasswordToHash(password);
   const newUser = await User.create({ name, email, phone, passwordHash, role });
-  if (role === "business") {
-    await User.updateOne(
-      { email },
-      { $set: { companyName, companyAddress, socials } }
-    );
-  }
   // await sendOTP(email, "signup");
   const otp = await sendOTP(email, "signup");
 

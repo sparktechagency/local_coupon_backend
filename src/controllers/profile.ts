@@ -6,12 +6,14 @@ import uploadService from "@services/uploadService";
 import { comparePassword, plainPasswordToHash } from "@utils/passwordHashing";
 import validateRequiredFields from "@utils/validateFields";
 import validateHoursOfOperation from "@utils/validateHoursOfOperation";
+import res from "@utils/response_handler";
 
 interface AuthenticatedRequest extends Request {
   user?: AccessTokenPayload;
 }
 
-const get_profile = async (req: AuthenticatedRequest, res: Response) => {
+const get_profile = async (req: AuthenticatedRequest, response: Response) => {
+  res.setRes(response);
   const user = await User.findById(req.user?.id);
   if (!user || user.isDeleted) {
     res.status(404).json({ message: "User not found" });
@@ -60,8 +62,9 @@ const get_profile = async (req: AuthenticatedRequest, res: Response) => {
 
 const get_business_profile = async (
   req: AuthenticatedRequest,
-  res: Response
+  response: Response
 ) => {
+  res.setRes(response);
   const business_profile_id = req.query?.id;
   const profile = await User.findById(business_profile_id, {
     companyName: 1,
@@ -88,10 +91,19 @@ const get_business_profile = async (
 
   await Visit.create({ visitor: req.user?.id, business: profile._id });
 
-  res.status(200).json({ profile, categories, coupons });
+  res
+    .status(200)
+    .json({
+      message: "Business profile retrieved successfully",
+      data: { profile, categories, coupons },
+    });
 };
 
-const get_last_visits = async (req: AuthenticatedRequest, res: Response) => {
+const get_last_visits = async (
+  req: AuthenticatedRequest,
+  response: Response
+) => {
+  res.setRes(response);
   try {
     const visits = await Visit.find(
       { visitor: req.user?.id },
@@ -100,7 +112,10 @@ const get_last_visits = async (req: AuthenticatedRequest, res: Response) => {
       path: "coupon",
       select: "-__v -add_to_carousel",
     });
-    res.json(visits);
+    res.json({
+      message: "Last visits retrieved successfully",
+      data: { visits },
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -109,7 +124,11 @@ const get_last_visits = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
-const update_profile = async (req: AuthenticatedRequest, res: Response) => {
+const update_profile = async (
+  req: AuthenticatedRequest,
+  response: Response
+) => {
+  res.setRes(response);
   const {
     name,
     dateOfBirth,
@@ -182,7 +201,11 @@ const update_profile = async (req: AuthenticatedRequest, res: Response) => {
   res.status(200).json({ message: "Profile updated successfully" });
 };
 
-const update_picture = async (req: AuthenticatedRequest, res: Response) => {
+const update_picture = async (
+  req: AuthenticatedRequest,
+  response: Response
+) => {
+  res.setRes(response);
   const picture = req.file;
   if (!picture) {
     res.status(400).json({ message: "No picture provided" });
@@ -211,7 +234,11 @@ const update_picture = async (req: AuthenticatedRequest, res: Response) => {
   res.status(200).json({ message: "Picture updated successfully" });
 };
 
-const delete_profile = async (req: AuthenticatedRequest, res: Response) => {
+const delete_profile = async (
+  req: AuthenticatedRequest,
+  response: Response
+) => {
+  res.setRes(response);
   const user = await User.findById(req.user?.id);
   if (!user || user.isDeleted) {
     res.status(404).json({ message: "User not found" });
@@ -222,7 +249,11 @@ const delete_profile = async (req: AuthenticatedRequest, res: Response) => {
   res.status(200).json({ message: "Profile deleted successfully" });
 };
 
-const change_password = async (req: AuthenticatedRequest, res: Response) => {
+const change_password = async (
+  req: AuthenticatedRequest,
+  response: Response
+) => {
+  res.setRes(response);
   const { oldPassword, newPassword } = req.body;
 
   const error = validateRequiredFields({ oldPassword, newPassword });
@@ -264,12 +295,16 @@ const change_password = async (req: AuthenticatedRequest, res: Response) => {
   res.status(200).json({ message: "Password changed successfully" });
 };
 
-const invite = async (req: AuthenticatedRequest, res: Response) => {
+const invite = async (req: AuthenticatedRequest, response: Response) => {
+  res.setRes(response);
   if (!req.user?.id) {
     res.status(400).json({ message: "User ID is undefined" });
     return;
   }
-  res.json({ invite_id: btoa(req.user?.id) });
+  res.json({
+    message: "Invite generated successfully",
+    data: { invite_id: btoa(req.user?.id) },
+  });
 };
 
 export {
