@@ -66,6 +66,10 @@ const adminRoutes = [
     path: "/users",
     router: adminRouter.usersRoutes,
   },
+  {
+    path: "/dashboard",
+    router: adminRouter.dashboardRoutes,
+  },
 ];
 
 const registerUserRoutes = (app: any) => {

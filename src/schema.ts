@@ -215,61 +215,64 @@ const Categories = new Schema({
   },
 });
 
-const Coupon = new Schema({
-  createdBy: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
+const Coupon = new Schema(
+  {
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    category: {
+      type: Schema.Types.ObjectId,
+      ref: "Categories",
+      required: true,
+    },
+    photo_url: {
+      type: String,
+      required: true,
+    },
+    discount_percentage: {
+      type: Number,
+    },
+    promo_title: {
+      type: String,
+    },
+    regular_amount: {
+      type: Number,
+    },
+    discount_amount: {
+      type: Number,
+    },
+    mxn_amount: {
+      type: Number,
+    },
+    more_details: {
+      type: String,
+    },
+    start: {
+      type: Date,
+      required: true,
+    },
+    end: {
+      type: Date,
+      required: true,
+    },
+    add_to_carousel: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    redeemCount: {
+      type: Number,
+      default: 0,
+    },
+    shareCount: {
+      type: Number,
+      default: 0,
+    },
   },
-  category: {
-    type: Schema.Types.ObjectId,
-    ref: "Categories",
-    required: true,
-  },
-  photo_url: {
-    type: String,
-    required: true,
-  },
-  discount_percentage: {
-    type: Number,
-  },
-  promo_title: {
-    type: String,
-  },
-  regular_amount: {
-    type: Number,
-  },
-  discount_amount: {
-    type: Number,
-  },
-  mxn_amount: {
-    type: Number,
-  },
-  more_details: {
-    type: String,
-  },
-  start: {
-    type: Date,
-    required: true,
-  },
-  end: {
-    type: Date,
-    required: true,
-  },
-  add_to_carousel: {
-    type: Boolean,
-    required: true,
-    default: false,
-  },
-  redeemCount: {
-    type: Number,
-    default: 0,
-  },
-  shareCount: {
-    type: Number,
-    default: 0,
-  },
-});
+  { timestamps: true }
+);
 
 const Visit = new Schema({
   visitor: {
