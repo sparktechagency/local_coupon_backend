@@ -5,7 +5,12 @@ import { isObjectIdOrHexString } from "mongoose";
 
 const get_users = async (req: Request, response: Response): Promise<void> => {
   res.setRes(response);
-  const { type, page: pageFromQuery, limit: limitFromQuery } = req.query || {};
+  const {
+    type,
+    page: pageFromQuery,
+    limit: limitFromQuery,
+    premium,
+  } = req.query || {};
 
   if (!type) {
     res.status(400).json({ message: "Invalid type" });
@@ -21,7 +26,14 @@ const get_users = async (req: Request, response: Response): Promise<void> => {
   const limit = Number(limitFromQuery) || 10;
   const skip = (page - 1) * limit;
 
-  const users = await User.find({ role: type })
+  const filters = {
+    role: type,
+    ...(premium && {
+      isSubscribed: true,
+    }),
+  };
+
+  const users = await User.find(filters)
     .skip(skip)
     .limit(limit)
     .select("-passwordHash -__v -providers -invitedUsers")
@@ -35,7 +47,7 @@ const get_users = async (req: Request, response: Response): Promise<void> => {
     res.status(404).json({ message: "No users found" });
     return;
   }
-  const totalUsers = await User.countDocuments({ role: type });
+  const totalUsers = await User.countDocuments(filters);
   const totalPages = Math.ceil(totalUsers / limit);
   const pagination = {
     totalUsers,

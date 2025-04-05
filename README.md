@@ -103,7 +103,7 @@ Backend: Node.js, Express, MongoDB
 - get-subscriptions
 - update-subscription
 - delete-subscription
-- premium-subscribers
+- ✅ premium-subscribers
 - ✅ get-categories
 - ✅ add-category
 - ✅ update-category
