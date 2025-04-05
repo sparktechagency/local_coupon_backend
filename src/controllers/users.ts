@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import res from "@utils/response_handler";
 import { User } from "src/db";
+import { isObjectIdOrHexString } from "mongoose";
 
 const get_users = async (req: Request, response: Response): Promise<void> => {
   res.setRes(response);
@@ -23,7 +24,7 @@ const get_users = async (req: Request, response: Response): Promise<void> => {
   const users = await User.find({ role: type })
     .skip(skip)
     .limit(limit)
-    .select("-password -__v")
+    .select("-passwordHash -__v -providers -invitedUsers")
     .sort({ createdAt: -1 })
     .lean();
   if (!users) {
@@ -46,4 +47,39 @@ const get_users = async (req: Request, response: Response): Promise<void> => {
   res.json({ message: "hello", data: users, meta: pagination });
 };
 
-export { get_users };
+const toggle_ban = async (req: Request, response: Response) => {
+  res.setRes(response);
+  const { user_id } = req.body || {};
+
+  if (!user_id || !isObjectIdOrHexString(user_id)) {
+    res.status(400).json({ message: "Invalid user id" });
+    return;
+  }
+
+  const user = await User.findById(user_id);
+
+  if (!user) {
+    res.status(400).json({ message: "Invalid user id" });
+    return;
+  }
+
+  if (user.isBanned) {
+    user.isBanned = false;
+  } else {
+    user.isBanned = true;
+  }
+
+  try {
+    await user.save();
+    res.json({
+      message: `User successfully ${!user.isBanned ? "unbanned" : "banned"}`,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+};
+
+export { get_users, toggle_ban };

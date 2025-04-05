@@ -98,7 +98,7 @@ Backend: Node.js, Express, MongoDB
 - recent-transactions
 - ✅ business-owners
 - ✅ users
-- ban/unban users
+- ✅ ban/unban users
 - ✅ add-subscription
 - get-subscriptions
 - update-subscription

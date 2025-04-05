@@ -190,6 +190,11 @@ const login = async (req: Request, res: Response) => {
     response_handler.status(400).json({ message: "User not found" });
     return;
   }
+  
+  if (user.isBanned) {
+    response_handler.status(400).json({ message: "This user was banned" });
+    return;
+  }
 
   if (!user.emailVerified) {
     response_handler.status(400).json({ message: "Email not verified" });

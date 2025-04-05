@@ -46,6 +46,10 @@ const User = new Schema(
       type: Boolean,
       default: false,
     },
+    isBanned: {
+      type: Boolean,
+      default: false,
+    },
     companyName: {
       type: String,
       default: null,
