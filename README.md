@@ -100,9 +100,9 @@ Backend: Node.js, Express, MongoDB
 - ✅ users
 - ✅ ban/unban users
 - ✅ add-subscription
-- get-subscriptions
-- update-subscription
-- delete-subscription
+- ✅ get-subscriptions
+- ✅ update-subscription
+- ✅ delete-subscription
 - ✅ premium-subscribers
 - ✅ get-categories
 - ✅ add-category
