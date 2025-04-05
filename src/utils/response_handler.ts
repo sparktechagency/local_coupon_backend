@@ -3,6 +3,7 @@ import { Response } from "express";
 type JsonParams = {
   message: string;
   data?: any;
+  meta?: any;
 };
 
 const response_handler = (() => {
@@ -20,7 +21,7 @@ const response_handler = (() => {
       statusCode = code;
       return this;
     },
-    json({ message, data }: JsonParams) {
+    json({ message, data, meta }: JsonParams) {
       if (!res) {
         throw new Error(
           "Response object not set. Call setRes(res) before using status().json()."
@@ -31,6 +32,7 @@ const response_handler = (() => {
         statusCode,
         message,
         data: data || null,
+        meta,
         success: getSuccessStatus(statusCode),
       };
 

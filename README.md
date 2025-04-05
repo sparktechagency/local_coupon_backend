@@ -96,8 +96,8 @@ Backend: Node.js, Express, MongoDB
 ## Admin Panel
 - dashboard
 - recent-transactions
-- business-owners
-- users
+- ✅ business-owners
+- ✅ users
 - ban/unban users
 - ✅ add-subscription
 - get-subscriptions
