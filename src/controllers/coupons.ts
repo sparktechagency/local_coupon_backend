@@ -4,7 +4,7 @@ import validateCoupon from "@utils/validateCoupon";
 import validateRequiredFields from "@utils/validateFields";
 import { Request, Response } from "express";
 import mongoose, { isObjectIdOrHexString } from "mongoose";
-import { Coupon, DownloadedCoupon, User, Visit } from "src/db";
+import { Categories, Coupon, DownloadedCoupon, User, Visit } from "src/db";
 import qr from "qrcode";
 import { JwtPayload, sign, verify } from "jsonwebtoken";
 
@@ -67,6 +67,14 @@ const add_coupon = async (req: AuthenticatedRequest, res: Response) => {
 
   if (couponError) {
     res.status(400).json({ message: couponError });
+    return;
+  }
+
+  const category = await Categories.findById(category_id);
+  if (!category) {
+    res.status(404).json({
+      message: "Category with this ID doesn't exist",
+    });
     return;
   }
 
