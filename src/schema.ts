@@ -294,6 +294,25 @@ const Visit = new Schema({
   },
 });
 
+const Notification = new Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+    },
+    details: {
+      type: String,
+      required: true,
+    },
+    isRead: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+  },
+  { timestamps: true }
+);
+
 export {
   User,
   OTP,
@@ -306,4 +325,5 @@ export {
   Coupon,
   Visit,
   DownloadedCoupon,
+  Notification,
 };

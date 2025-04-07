@@ -9,6 +9,7 @@ import {
 } from "@routes/index";
 import { startDB } from "src/db";
 import logger from "@utils/logger";
+import "@services/notificationService";
 
 // config
 config();

@@ -17,6 +17,7 @@ import axios from "axios";
 import { decode, JwtPayload } from "jsonwebtoken";
 import checkSubscriptionStatus from "@utils/checkSubscriptionStatus";
 import response_handler from "@utils/response_handler";
+import { triggerNotification } from "@services/notificationService";
 
 const signup = async (req: Request, res: Response) => {
   response_handler.setRes(res);
@@ -69,6 +70,8 @@ const signup = async (req: Request, res: Response) => {
       });
     }
   }
+
+  triggerNotification("SIGNUP", { email });
 
   response_handler
     .status(200)

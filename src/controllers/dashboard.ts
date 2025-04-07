@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import res from "@utils/response_handler";
-import { Coupon, Payment, User } from "src/db";
+import { Coupon, Notification, Payment, User } from "src/db";
 
 const get_dashboard = async (req: Request, response: Response) => {
   res.setRes(response);
@@ -120,4 +120,19 @@ const get_recent_transactions = async (req: Request, response: Response) => {
   }
 };
 
-export { get_dashboard, get_recent_transactions };
+const get_notifications = async (req: Request, response: Response) => {
+  res.setRes(response);
+
+  try {
+    const notifications = await Notification.find().sort({ createdAt: -1 });
+    res.json({
+      message: "Notifications fetched successfully",
+      data: notifications,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export { get_dashboard, get_recent_transactions, get_notifications };

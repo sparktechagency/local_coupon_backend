@@ -1,3 +1,4 @@
+import { triggerNotification } from "@services/notificationService";
 import { AccessTokenPayload } from "@utils/jwt";
 import validateRequiredFields from "@utils/validateFields";
 import { Request, Response } from "express";
@@ -107,6 +108,8 @@ const stripe_webhook = async (req: Request, res: Response) => {
           Date.now() + packageId?.durationInMonths * 30 * 24 * 60 * 60 * 1000
         ),
       });
+
+      triggerNotification("NEW_SUBSCRIPTION", {});
 
       res.send();
     } else {
