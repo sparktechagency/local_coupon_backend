@@ -109,7 +109,12 @@ const get_recent_transactions = async (req: Request, response: Response) => {
   res.setRes(response);
 
   try {
-    const transactions = await Coupon.find().sort({ updatedAt: -1 });
+    const transactions = await Coupon.find()
+      .populate({
+        path: "createdBy",
+        select: "name",
+      })
+      .sort({ updatedAt: -1 });
     res.json({
       message: "Recent transactions fetched successfully",
       data: transactions,

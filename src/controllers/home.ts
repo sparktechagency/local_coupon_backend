@@ -16,7 +16,12 @@ const home = async (req: AuthenticatedRequest, res: Response) => {
     ...(query && { "createdBy.companyName": new RegExp(query as string, "i") }),
     ...(category && { category }),
     ...(location && { "createdBy.location": location }),
-  }).populate("createdBy");
+  })
+    .populate("createdBy")
+    .populate({
+      path: "createdBy",
+      select: "name",
+    });
 
   // Basic recommendation algorithm based on the number of downloads and shares
   const secureCoupons = couponsFromDB.map((coupon) => ({

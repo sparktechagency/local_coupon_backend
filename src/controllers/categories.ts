@@ -23,10 +23,10 @@ const add_category = async (req: Request, res: Response) => {
     return;
   }
 
-  if (file?.originalname?.split(".")[1] !== "svg") {
-    res.status(400).json({ message: "Icon should be .svg format" });
-    return;
-  }
+  // if (file?.originalname?.split(".")[1] !== "svg") {
+  //   res.status(400).json({ message: "Icon should be .svg format" });
+  //   return;
+  // }
 
   const category = await Categories.findOne({ name });
 

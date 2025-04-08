@@ -17,7 +17,10 @@ const get_coupons = async (req: AuthenticatedRequest, res: Response) => {
     const coupons = await Coupon.find(
       { createdBy: req?.user?.id },
       { __v: 0, add_to_carousel: 0 }
-    );
+    ).populate({
+      path: "createdBy",
+      select: "name",
+    });
     res.json(coupons);
   }
   if (req?.user?.role === "user") {
@@ -30,6 +33,10 @@ const get_coupons = async (req: AuthenticatedRequest, res: Response) => {
       .populate({
         path: "coupon",
         select: "-__v -add_to_carousel",
+        populate: {
+          path: "createdBy",
+          select: "name",
+        },
       })
       .sort({ redeemed: 1 });
     res.json(downloadedCoupons);
