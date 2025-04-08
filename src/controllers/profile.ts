@@ -37,6 +37,7 @@ const get_profile = async (req: AuthenticatedRequest, response: Response) => {
     dateOfBirth,
     gender,
     location,
+    phone,
   } = user;
 
   const responsePayload: any = {
@@ -49,6 +50,7 @@ const get_profile = async (req: AuthenticatedRequest, response: Response) => {
     dateOfBirth,
     gender,
     location,
+    phone
   };
 
   // if (role === "business") {

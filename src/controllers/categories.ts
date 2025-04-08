@@ -2,11 +2,16 @@ import uploadService from "@services/uploadService";
 import validateRequiredFields from "@utils/validateFields";
 import { Request, Response } from "express";
 import { Categories } from "@db";
+import res from "@utils/response_handler";
 
-const get_categories = async (req: Request, res: Response) => {
+const get_categories = async (req: Request, response: Response) => {
+  res.setRes(response);
   try {
     const categories = await Categories.find({}, { __v: 0 });
-    res.json(categories);
+    res.json({
+      message: "Categories fetched successfully",
+      data: categories,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal Server Error" });
