@@ -6,20 +6,33 @@ interface AuthenticatedRequest extends Request {
   user?: AccessTokenPayload;
 }
 const home = async (req: AuthenticatedRequest, res: Response) => {
-  const { query, category, location } = req.query || {};
+  const { query, category, location, page, limit } = req.query || {};
   let categories;
   if (!category) {
     categories = await Categories.find({}, { __v: 0 });
   }
 
-  const couponsFromDB = await Coupon.find({
+  const filters = {
     ...(query && { "createdBy.companyName": new RegExp(query as string, "i") }),
     ...(category && { category }),
     ...(location && { "createdBy.location": location }),
-  }).populate({
-    path: "createdBy",
-    select: "name companyName",
-  });
+  };
+
+  const pageNumber = parseInt(page as string) || 1;
+  const limitNumber = parseInt(limit as string) || 10;
+  const skip = (pageNumber - 1) * limitNumber;
+  const totalCoupons = await Coupon.countDocuments(filters);
+  const totalPages = Math.ceil(totalCoupons / limitNumber);
+
+  const couponsFromDB = await Coupon.find(filters)
+    .populate({
+      path: "createdBy",
+      select: "name companyName",
+    })
+    .skip(skip)
+    .limit(limitNumber)
+    .sort({ createdAt: -1 })
+    .lean();
 
   // Sort coupons by a simple recommendation score
   couponsFromDB.sort((a, b) => {
@@ -28,10 +41,23 @@ const home = async (req: AuthenticatedRequest, res: Response) => {
     return scoreB - scoreA;
   });
 
-  const carousel = couponsFromDB.filter((coupon) => coupon.add_to_carousel);
+  const carousel = couponsFromDB
+    .filter((coupon) => coupon.add_to_carousel)
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 20);
   const coupons = couponsFromDB.filter((coupon) => !coupon.add_to_carousel);
 
-  res.json({ categories, carousel, coupons });
+  res.json({
+    categories,
+    carousel,
+    coupons,
+    meta: {
+      totalCoupons,
+      totalPages,
+      currentPage: pageNumber,
+      limit: limitNumber,
+    },
+  });
 };
 
 const analytics = async (req: AuthenticatedRequest, res: Response) => {
