@@ -77,7 +77,10 @@ const get_business_profile = async (
       createdBy: business_profile_id,
     },
     { __v: 0 }
-  );
+  ).populate({
+    path: "createdBy",
+    select: "name companyName",
+  });
 
   const category_ids = coupons.map((coupon) => coupon.category);
   const categories = await Categories.find(
@@ -91,12 +94,10 @@ const get_business_profile = async (
 
   await Visit.create({ visitor: req.user?.id, business: profile._id });
 
-  res
-    .status(200)
-    .json({
-      message: "Business profile retrieved successfully",
-      data: { profile, categories, coupons },
-    });
+  res.status(200).json({
+    message: "Business profile retrieved successfully",
+    data: { profile, categories, coupons },
+  });
 };
 
 const get_last_visits = async (
@@ -111,6 +112,10 @@ const get_last_visits = async (
     ).populate({
       path: "coupon",
       select: "-__v -add_to_carousel",
+      populate: {
+        path: "createdBy",
+        select: "name companyName",
+      },
     });
     res.json({
       message: "Last visits retrieved successfully",
