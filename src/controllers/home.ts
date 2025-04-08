@@ -1,6 +1,6 @@
 import { AccessTokenPayload } from "@utils/jwt";
 import { Request, Response } from "express";
-import { Categories, Coupon, DownloadedCoupon, Visit } from "src/db";
+import { Categories, Coupon, DownloadedCoupon, Visit } from "@db";
 
 interface AuthenticatedRequest extends Request {
   user?: AccessTokenPayload;

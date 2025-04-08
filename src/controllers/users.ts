@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import res from "@utils/response_handler";
-import { User } from "src/db";
+import { User } from "@db";
 import { isObjectIdOrHexString } from "mongoose";
 
 const get_users = async (req: Request, response: Response): Promise<void> => {

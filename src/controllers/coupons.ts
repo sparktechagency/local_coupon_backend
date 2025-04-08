@@ -4,7 +4,7 @@ import validateCoupon from "@utils/validateCoupon";
 import validateRequiredFields from "@utils/validateFields";
 import { Request, Response } from "express";
 import mongoose, { isObjectIdOrHexString } from "mongoose";
-import { Categories, Coupon, DownloadedCoupon, User, Visit } from "src/db";
+import { Categories, Coupon, DownloadedCoupon, User, Visit } from "@db";
 import qr from "qrcode";
 import { JwtPayload, sign, verify } from "jsonwebtoken";
 

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import res from "@utils/response_handler";
-import { Coupon, Notification, Payment, User } from "src/db";
+import { Coupon, Notification, Payment, User } from "@db";
 
 const get_dashboard = async (req: Request, response: Response) => {
   res.setRes(response);

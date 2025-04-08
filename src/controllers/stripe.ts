@@ -2,7 +2,7 @@ import { triggerNotification } from "@services/notificationService";
 import { AccessTokenPayload } from "@utils/jwt";
 import validateRequiredFields from "@utils/validateFields";
 import { Request, Response } from "express";
-import { Payment, Subscription, User } from "src/db";
+import { Payment, Subscription, User } from "@db";
 import Stripe from "stripe";
 
 interface CreatePaymentRequest extends Request {

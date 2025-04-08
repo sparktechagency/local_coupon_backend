@@ -1,6 +1,6 @@
 import validateRequiredFields from "@utils/validateFields";
 import { Request, Response } from "express";
-import { Subscription } from "src/db";
+import { Subscription } from "@db";
 import res from "@utils/response_handler";
 
 const add_subscription = async (req: Request, response: Response) => {

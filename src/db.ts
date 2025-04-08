@@ -12,7 +12,7 @@ import {
   Visit as VisitSchema,
   DownloadedCoupon as DownloadedCouponSchema,
   Notification as NotificationSchema,
-} from "src/schema";
+} from "./schema";
 
 const startDB = async () => {
   await mongoose.connect(process.env.MONGO_URI || "");

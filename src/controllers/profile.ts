@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { AccessTokenPayload } from "@utils/jwt";
-import { Categories, Coupon, User, Visit } from "src/db";
+import { Categories, Coupon, User, Visit } from "@db";
 import parseDate from "@utils/parseDate";
 import uploadService from "@services/uploadService";
 import { comparePassword, plainPasswordToHash } from "@utils/passwordHashing";

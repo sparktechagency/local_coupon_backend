@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { FAQs, Privacy, Terms } from "src/db";
+import { FAQs, Privacy, Terms } from "@db";
 
 const get_faqs = async (req: Request, res: Response) => {
   const faqs = await FAQs.find({}, { _id: 0, __v: 0 });

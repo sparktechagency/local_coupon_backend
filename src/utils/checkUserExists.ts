@@ -1,4 +1,4 @@
-import { User } from "src/db";
+import { User } from "@db";
 
 const checkUserExists = async (field: "email" | "phone", value: string) => {
   const user = await User.findOne({ [field]: value });

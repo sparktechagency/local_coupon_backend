@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyAccessToken } from "@utils/jwt";
-import { User } from "src/db";
+import { User } from "@db";
 
 interface AccessTokenPayload {
   email: string;

@@ -1,4 +1,4 @@
-import { User } from "src/db";
+import { User } from "@db";
 
 const checkSubscriptionStatus = async (userId: string) => {
   const user = await User.findById(userId);

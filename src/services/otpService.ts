@@ -1,5 +1,5 @@
 import { sendEmail } from "@services/emailService";
-import { OTP } from "src/db";
+import { OTP } from "@db";
 
 const generateOtp = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();

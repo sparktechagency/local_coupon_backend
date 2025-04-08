@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { User } from "src/db";
+import { User } from "@db";
 import { sendOTP, verifyOTP } from "@services/otpService";
 import validateRequiredFields from "@utils/validateFields";
 import { plainPasswordToHash, comparePassword } from "@utils/passwordHashing";

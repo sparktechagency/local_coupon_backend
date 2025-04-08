@@ -1,7 +1,7 @@
 import uploadService from "@services/uploadService";
 import validateRequiredFields from "@utils/validateFields";
 import { Request, Response } from "express";
-import { Categories } from "src/db";
+import { Categories } from "@db";
 
 const get_categories = async (req: Request, res: Response) => {
   try {

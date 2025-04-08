@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { Notification } from "src/db";
+import { Notification } from "@db";
 
 class EventBus extends EventEmitter {}
 

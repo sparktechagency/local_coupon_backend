@@ -7,7 +7,7 @@ import {
   registerAdminRoutes,
   registerRoutesThatNeedsRawBody,
 } from "@routes/index";
-import { startDB } from "src/db";
+import { startDB } from "@db";
 import logger from "@utils/logger";
 import "@services/notificationService";
 
