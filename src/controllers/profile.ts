@@ -51,13 +51,16 @@ const get_profile = async (req: AuthenticatedRequest, response: Response) => {
     location,
   };
 
-  if (role === "business") {
-    responsePayload.companyName = user.companyName;
-    responsePayload.companyAddress = user.companyAddress;
-    responsePayload.socials = user.socials;
-  }
-
-  res.status(200).json(responsePayload);
+  // if (role === "business") {
+  //   responsePayload.companyName = user.companyName;
+  //   responsePayload.companyAddress = user.companyAddress;
+  //   responsePayload.socials = user.socials;
+  //   responsePayload.hoursOfOperation = user.hoursOfOperation;
+  // }
+  
+  res
+    .status(200)
+    .json({ data: responsePayload, message: "Profile retrieved successfully" });
 };
 
 const get_business_profile = async (
