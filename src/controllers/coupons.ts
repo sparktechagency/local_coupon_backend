@@ -32,7 +32,7 @@ const get_coupons = async (req: AuthenticatedRequest, response: Response) => {
     })
       .populate({
         path: "createdBy",
-        select: "name",
+        select: "name companyName",
       })
       .skip(skip)
       .limit(limitNumber);
@@ -63,7 +63,7 @@ const get_coupons = async (req: AuthenticatedRequest, response: Response) => {
         select: "-__v -add_to_carousel",
         populate: {
           path: "createdBy",
-          select: "name",
+          select: "name companyName",
         },
       })
       .sort({ redeemed: 1 })
