@@ -13,23 +13,48 @@ interface AuthenticatedRequest extends Request {
 }
 
 const get_coupons = async (req: AuthenticatedRequest, res: Response) => {
+  const { page, limit } = req.query;
+  const pageNumber = Number(page) || 1;
+  const limitNumber = Number(limit) || 10;
+
   if (req?.user?.role === "business") {
-    const coupons = await Coupon.find(
-      { createdBy: req?.user?.id },
-      { __v: 0, add_to_carousel: 0 }
-    ).populate({
-      path: "createdBy",
-      select: "name",
+    const filters = { createdBy: req?.user?.id };
+
+    const totalCoupons = await Coupon.countDocuments(filters);
+    const totalPages = Math.ceil(totalCoupons / limitNumber);
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const coupons = await Coupon.find(filters, {
+      __v: 0,
+      add_to_carousel: 0,
+    })
+      .populate({
+        path: "createdBy",
+        select: "name",
+      })
+      .skip(skip)
+      .limit(limitNumber);
+
+    res.json({
+      coupons,
+      meta: {
+        total: totalCoupons,
+        page: pageNumber,
+        limit: limitNumber,
+        totalPages,
+      },
     });
-    res.json(coupons);
   }
   if (req?.user?.role === "user") {
-    const downloadedCoupons = await DownloadedCoupon.find(
-      {
-        user: req.user.id,
-      },
-      { __v: 0 }
-    )
+    const filters = {
+      user: req.user.id,
+    };
+
+    const totalCoupons = await DownloadedCoupon.countDocuments(filters);
+    const totalPages = Math.ceil(totalCoupons / limitNumber);
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const downloadedCoupons = await DownloadedCoupon.find(filters, { __v: 0 })
       .populate({
         path: "coupon",
         select: "-__v -add_to_carousel",
@@ -38,8 +63,19 @@ const get_coupons = async (req: AuthenticatedRequest, res: Response) => {
           select: "name",
         },
       })
-      .sort({ redeemed: 1 });
-    res.json(downloadedCoupons);
+      .sort({ redeemed: 1 })
+      .skip(skip)
+      .limit(limitNumber);
+
+    res.json({
+      coupons: downloadedCoupons,
+      meta: {
+        total: totalCoupons,
+        page: pageNumber,
+        limit: limitNumber,
+        totalPages,
+      },
+    });
   }
 };
 

@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import res from "@utils/response_handler";
 import { Coupon, Notification, Payment, User } from "@db";
+import createResponseHandler from "@utils/response_handler";
 
 const get_dashboard = async (req: Request, response: Response) => {
-  res.setRes(response);
+  const res = createResponseHandler(response);
   const { subscription_year, user_year } = req.query;
 
   const total_users = await User.countDocuments();
@@ -106,8 +106,7 @@ const get_dashboard = async (req: Request, response: Response) => {
 };
 
 const get_recent_transactions = async (req: Request, response: Response) => {
-  res.setRes(response);
-
+  const res = createResponseHandler(response);
   try {
     const transactions = await Coupon.find()
       .populate({
@@ -126,8 +125,7 @@ const get_recent_transactions = async (req: Request, response: Response) => {
 };
 
 const get_notifications = async (req: Request, response: Response) => {
-  res.setRes(response);
-
+  const res = createResponseHandler(response);
   try {
     const notifications = await Notification.find().sort({ createdAt: -1 });
     res.json({

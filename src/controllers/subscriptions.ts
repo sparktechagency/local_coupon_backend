@@ -1,10 +1,10 @@
 import validateRequiredFields from "@utils/validateFields";
 import { Request, Response } from "express";
 import { Subscription } from "@db";
-import res from "@utils/response_handler";
+import createResponseHandler from "@utils/response_handler";
 
 const add_subscription = async (req: Request, response: Response) => {
-  res.setRes(response);
+  const res = createResponseHandler(response);
   const { name, priceInCents, durationInMonths, info } = req.body;
   const error = validateRequiredFields({
     name,
@@ -34,7 +34,7 @@ const add_subscription = async (req: Request, response: Response) => {
 };
 
 const get_subscriptions = async (req: Request, response: Response) => {
-  res.setRes(response);
+  const res = createResponseHandler(response);
   const subscriptions = await Subscription.find({}, { __v: 0 });
   res.json({
     message: "Subscriptions fetched successfully",
@@ -42,7 +42,7 @@ const get_subscriptions = async (req: Request, response: Response) => {
   });
 };
 const update_subscription = async (req: Request, response: Response) => {
-  res.setRes(response);
+  const res = createResponseHandler(response);
   const { id, name, priceInCents, durationInMonths, info } = req.body || {};
   const error = validateRequiredFields({ id });
 
@@ -66,7 +66,7 @@ const update_subscription = async (req: Request, response: Response) => {
   }
 };
 const delete_subscription = async (req: Request, response: Response) => {
-  res.setRes(response);
+  const res = createResponseHandler(response);
 
   const { id } = req.body || {};
 

@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
-import res from "@utils/response_handler";
 import { User } from "@db";
 import { isObjectIdOrHexString } from "mongoose";
+import createResponseHandler from "@utils/response_handler";
 
 const get_users = async (req: Request, response: Response): Promise<void> => {
-  res.setRes(response);
+  const res = createResponseHandler(response);
   const {
     type,
     page: pageFromQuery,
@@ -60,7 +60,7 @@ const get_users = async (req: Request, response: Response): Promise<void> => {
 };
 
 const toggle_ban = async (req: Request, response: Response) => {
-  res.setRes(response);
+  const res = createResponseHandler(response);
   const { user_id } = req.body || {};
 
   if (!user_id || !isObjectIdOrHexString(user_id)) {

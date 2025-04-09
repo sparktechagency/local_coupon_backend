@@ -6,14 +6,14 @@ import uploadService from "@services/uploadService";
 import { comparePassword, plainPasswordToHash } from "@utils/passwordHashing";
 import validateRequiredFields from "@utils/validateFields";
 import validateHoursOfOperation from "@utils/validateHoursOfOperation";
-import res from "@utils/response_handler";
+import createResponseHandler from "@utils/response_handler";
 
 interface AuthenticatedRequest extends Request {
   user?: AccessTokenPayload;
 }
 
 const get_profile = async (req: AuthenticatedRequest, response: Response) => {
-  res.setRes(response);
+  const res = createResponseHandler(response);
   const user = await User.findById(req.user?.id);
   if (!user || user.isDeleted) {
     res.status(404).json({ message: "User not found" });
@@ -50,7 +50,7 @@ const get_profile = async (req: AuthenticatedRequest, response: Response) => {
     dateOfBirth,
     gender,
     location,
-    phone
+    phone,
   };
 
   // if (role === "business") {
@@ -59,7 +59,7 @@ const get_profile = async (req: AuthenticatedRequest, response: Response) => {
   //   responsePayload.socials = user.socials;
   //   responsePayload.hoursOfOperation = user.hoursOfOperation;
   // }
-  
+
   res
     .status(200)
     .json({ data: responsePayload, message: "Profile retrieved successfully" });
@@ -69,23 +69,34 @@ const get_business_profile = async (
   req: AuthenticatedRequest,
   response: Response
 ) => {
-  res.setRes(response);
-  const business_profile_id = req.query?.id;
+  const res = createResponseHandler(response);
+  const { id: business_profile_id, page, limit } = req.query;
   const profile = await User.findById(business_profile_id, {
     companyName: 1,
     companyAddress: 1,
     socials: 1,
     location: 1,
   });
-  const coupons = await Coupon.find(
-    {
-      createdBy: business_profile_id,
-    },
-    { __v: 0 }
-  ).populate({
-    path: "createdBy",
-    select: "name companyName",
-  });
+
+  const filters = {
+    createdBy: business_profile_id,
+  };
+
+  //pagination
+  const pageNumber = parseInt(page as string) || 1;
+  const limitNumber = parseInt(limit as string) || 10;
+  const skip = (pageNumber - 1) * limitNumber;
+  const totalCoupons = await Coupon.countDocuments(filters);
+  const totalPages = Math.ceil(totalCoupons / limitNumber);
+
+  const coupons = await Coupon.find(filters, { __v: 0 })
+    .populate({
+      path: "createdBy",
+      select: "name companyName",
+    })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limitNumber);
 
   const category_ids = coupons.map((coupon) => coupon.category);
   const categories = await Categories.find(
@@ -101,7 +112,17 @@ const get_business_profile = async (
 
   res.status(200).json({
     message: "Business profile retrieved successfully",
-    data: { profile, categories, coupons },
+    data: {
+      profile,
+      categories,
+      coupons,
+      meta: {
+        totalPages,
+        currentPage: pageNumber,
+        totalCoupons,
+        limit: limitNumber,
+      },
+    },
   });
 };
 
@@ -109,22 +130,42 @@ const get_last_visits = async (
   req: AuthenticatedRequest,
   response: Response
 ) => {
-  res.setRes(response);
+  const res = createResponseHandler(response);
+  const { page, limit } = req.query;
+  const pageNumber = parseInt(page as string) || 1;
+  const limitNumber = parseInt(limit as string) || 10;
+  const skip = (pageNumber - 1) * limitNumber;
+  const totalVisits = await Visit.countDocuments({
+    visitor: req.user?.id,
+  });
+  const totalPages = Math.ceil(totalVisits / limitNumber);
+
   try {
     const visits = await Visit.find(
       { visitor: req.user?.id },
       { visitor: 0, __v: 0 }
-    ).populate({
-      path: "coupon",
-      select: "-__v -add_to_carousel",
-      populate: {
-        path: "createdBy",
-        select: "name companyName",
-      },
-    });
+    )
+      .populate({
+        path: "coupon",
+        select: "-__v -add_to_carousel",
+        populate: {
+          path: "createdBy",
+          select: "name companyName",
+        },
+      })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNumber);
+
     res.json({
       message: "Last visits retrieved successfully",
-      data: { visits },
+      data: visits,
+      meta: {
+        totalPages,
+        currentPage: pageNumber,
+        totalVisits,
+        limit: limitNumber,
+      },
     });
   } catch (error) {
     console.log(error);
@@ -138,7 +179,7 @@ const update_profile = async (
   req: AuthenticatedRequest,
   response: Response
 ) => {
-  res.setRes(response);
+  const res = createResponseHandler(response);
   const {
     name,
     dateOfBirth,
@@ -215,7 +256,7 @@ const update_picture = async (
   req: AuthenticatedRequest,
   response: Response
 ) => {
-  res.setRes(response);
+  const res = createResponseHandler(response);
   const picture = req.file;
   if (!picture) {
     res.status(400).json({ message: "No picture provided" });
@@ -248,7 +289,7 @@ const delete_profile = async (
   req: AuthenticatedRequest,
   response: Response
 ) => {
-  res.setRes(response);
+  const res = createResponseHandler(response);
   const user = await User.findById(req.user?.id);
   if (!user || user.isDeleted) {
     res.status(404).json({ message: "User not found" });
@@ -263,7 +304,7 @@ const change_password = async (
   req: AuthenticatedRequest,
   response: Response
 ) => {
-  res.setRes(response);
+  const res = createResponseHandler(response);
   const { oldPassword, newPassword } = req.body;
 
   const error = validateRequiredFields({ oldPassword, newPassword });
@@ -306,7 +347,7 @@ const change_password = async (
 };
 
 const invite = async (req: AuthenticatedRequest, response: Response) => {
-  res.setRes(response);
+  const res = createResponseHandler(response);
   if (!req.user?.id) {
     res.status(400).json({ message: "User ID is undefined" });
     return;

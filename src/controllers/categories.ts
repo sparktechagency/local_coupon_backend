@@ -2,10 +2,10 @@ import uploadService from "@services/uploadService";
 import validateRequiredFields from "@utils/validateFields";
 import { Request, Response } from "express";
 import { Categories } from "@db";
-import res from "@utils/response_handler";
+import createResponseHandler from "@utils/response_handler";
 
 const get_categories = async (req: Request, response: Response) => {
-  res.setRes(response);
+  const res = createResponseHandler(response);
   try {
     const categories = await Categories.find({}, { __v: 0 });
     res.json({
