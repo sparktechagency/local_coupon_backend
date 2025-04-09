@@ -7,12 +7,14 @@ import mongoose, { isObjectIdOrHexString } from "mongoose";
 import { Categories, Coupon, DownloadedCoupon, User, Visit } from "@db";
 import qr from "qrcode";
 import { JwtPayload, sign, verify } from "jsonwebtoken";
+import createResponseHandler from "@utils/response_handler";
 
 interface AuthenticatedRequest extends Request {
   user?: AccessTokenPayload;
 }
 
-const get_coupons = async (req: AuthenticatedRequest, res: Response) => {
+const get_coupons = async (req: AuthenticatedRequest, response: Response) => {
+  const res = createResponseHandler(response);
   const { page, limit } = req.query;
   const pageNumber = Number(page) || 1;
   const limitNumber = Number(limit) || 10;
@@ -36,7 +38,8 @@ const get_coupons = async (req: AuthenticatedRequest, res: Response) => {
       .limit(limitNumber);
 
     res.json({
-      coupons,
+      message: "Coupons fetched successfully",
+      data: coupons,
       meta: {
         total: totalCoupons,
         page: pageNumber,
@@ -68,7 +71,8 @@ const get_coupons = async (req: AuthenticatedRequest, res: Response) => {
       .limit(limitNumber);
 
     res.json({
-      coupons: downloadedCoupons,
+      message: "Downloaded coupons fetched successfully",
+      data: downloadedCoupons,
       meta: {
         total: totalCoupons,
         page: pageNumber,
@@ -79,7 +83,8 @@ const get_coupons = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
-const add_coupon = async (req: AuthenticatedRequest, res: Response) => {
+const add_coupon = async (req: AuthenticatedRequest, response: Response) => {
+  const res = createResponseHandler(response);
   const {
     category_id,
     discount_percentage,
@@ -171,7 +176,8 @@ const add_coupon = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
-const update_coupon = async (req: AuthenticatedRequest, res: Response) => {
+const update_coupon = async (req: AuthenticatedRequest, response: Response) => {
+  const res = createResponseHandler(response);
   const {
     id,
     category_id,
@@ -268,7 +274,8 @@ const update_coupon = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
-const delete_coupon = async (req: AuthenticatedRequest, res: Response) => {
+const delete_coupon = async (req: AuthenticatedRequest, response: Response) => {
+  const res = createResponseHandler(response);
   if (!req.query.id) {
     res.status(400).json({ message: "Coupon ID is required" });
     return;
@@ -318,7 +325,11 @@ const delete_coupon = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
-const download_coupon = async (req: AuthenticatedRequest, res: Response) => {
+const download_coupon = async (
+  req: AuthenticatedRequest,
+  response: Response
+) => {
+  const res = createResponseHandler(response);
   const user = await User.findById(req?.user?.id);
   const coupon = await Coupon.findById(req?.query?.id);
 
@@ -509,39 +520,45 @@ const redeem_coupon = async (req: Request, res: Response) => {
   res.send(pageTemplate("Success", "Coupon successfully redeemed!", true));
 };
 
-const share_coupon = async (req: Request, res: Response) => {
+const share_coupon = async (req: Request, response: Response) => {
+  const res = createResponseHandler(response);
+
   const { couponId } = req.body || {};
 
   const error = validateRequiredFields({ couponId });
   if (error) {
-    res.status(400).json({ error });
+    res.status(400).json({ message: error });
     return;
   }
 
   if (!isObjectIdOrHexString(couponId)) {
-    res.status(400).json({ error: "Invalid Id" });
+    res.status(400).json({ message: "Invalid Id" });
     return;
   }
 
   const coupon = await Coupon.findById(couponId);
 
   if (!coupon) {
-    res.status(404).json({ error: "Coupon not found" });
+    res.status(404).json({ message: "Coupon not found" });
     return;
   }
 
   coupon.shareCount += 1;
   await coupon.save();
-  res.json({ business_id: coupon.createdBy._id });
+  res.json({
+    message: "Coupon shared successfully",
+    data: { business_id: coupon.createdBy._id },
+  });
 };
 
 type TypeView = "week" | "month" | "year";
 
-const analytics = async (req: AuthenticatedRequest, res: Response) => {
+const analytics = async (req: AuthenticatedRequest, response: Response) => {
+  const res = createResponseHandler(response);
   const type = req.query.type as TypeView;
 
   if (!["week", "month", "year"].includes(type)) {
-    res.status(400).json({ error: "Invalid type parameter" });
+    res.status(400).json({ message: "Invalid type parameter" });
     return;
   }
 
@@ -610,7 +627,10 @@ const analytics = async (req: AuthenticatedRequest, res: Response) => {
     }
   });
 
-  res.json({ groupedData, type });
+  res.json({
+    message: "Analytics fetched successfully",
+    data: { groupedData, type },
+  });
 };
 
 export {

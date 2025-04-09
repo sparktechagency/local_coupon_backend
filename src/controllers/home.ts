@@ -1,11 +1,13 @@
 import { AccessTokenPayload } from "@utils/jwt";
 import { Request, Response } from "express";
 import { Categories, Coupon, DownloadedCoupon, Visit } from "@db";
+import createResponseHandler from "@utils/response_handler";
 
 interface AuthenticatedRequest extends Request {
   user?: AccessTokenPayload;
 }
-const home = async (req: AuthenticatedRequest, res: Response) => {
+const home = async (req: AuthenticatedRequest, response: Response) => {
+  const res = createResponseHandler(response);
   const { query, category, location, page, limit } = req.query || {};
   let categories;
   if (!category) {
@@ -48,9 +50,8 @@ const home = async (req: AuthenticatedRequest, res: Response) => {
   const coupons = couponsFromDB.filter((coupon) => !coupon.add_to_carousel);
 
   res.json({
-    categories,
-    carousel,
-    coupons,
+    data: { categories, carousel, coupons },
+    message: "Home fetched successfully",
     meta: {
       totalCoupons,
       totalPages,
@@ -60,7 +61,8 @@ const home = async (req: AuthenticatedRequest, res: Response) => {
   });
 };
 
-const analytics = async (req: AuthenticatedRequest, res: Response) => {
+const analytics = async (req: AuthenticatedRequest, response: Response) => {
+  const res = createResponseHandler(response);
   const coupons = await Coupon.find({ createdBy: req.user?.id });
   const total_downloads = await DownloadedCoupon.countDocuments({
     coupon: { $in: coupons.map((c) => c._id) },
@@ -83,12 +85,15 @@ const analytics = async (req: AuthenticatedRequest, res: Response) => {
   );
 
   res.json({
-    total_downloads,
-    total_shares,
-    click_to_explore,
-    expired_coupons,
-    profile_visits,
-    value,
+    data: {
+      total_downloads,
+      total_shares,
+      click_to_explore,
+      expired_coupons,
+      profile_visits,
+      value,
+    },
+    message: "Analytics fetched successfully",
   });
 };
 
