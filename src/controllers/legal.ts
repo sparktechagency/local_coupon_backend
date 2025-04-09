@@ -6,7 +6,7 @@ const get_faqs = async (req: Request, response: Response) => {
   const res = createResponseHandler(response);
   const faqs = await FAQs.find({}, { _id: 0, __v: 0 });
   if (!faqs || faqs.length === 0) {
-    res.status(404).json({ message: "No FAQs found" });
+    res.json({ message: "No FAQs found" });
     return;
   }
   res.json({ data: faqs, message: "FAQs fetched successfully" });
@@ -16,7 +16,7 @@ const get_terms = async (req: Request, response: Response) => {
   const res = createResponseHandler(response);
   const terms = await Terms.find({}, { _id: 0, __v: 0 });
   if (!terms || terms.length === 0) {
-    res.status(404).json({ message: "No Terms found" });
+    res.json({ message: "No Terms found" });
     return;
   }
   res.json({
@@ -29,7 +29,7 @@ const get_privacy = async (req: Request, response: Response) => {
   const res = createResponseHandler(response);
   const privacy = await Privacy.find({}, { _id: 0, __v: 0 });
   if (!privacy || privacy.length === 0) {
-    res.status(404).json({ message: "No Privacy found" });
+    res.json({ message: "No Privacy found" });
     return;
   }
   res.json({
