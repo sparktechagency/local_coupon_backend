@@ -231,6 +231,9 @@ const Coupon = new Schema(
       type: String,
       required: true,
     },
+    carousel_photo_url: {
+      type: String,
+    },
     discount_percentage: {
       type: Number,
     },

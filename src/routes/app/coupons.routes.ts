@@ -3,6 +3,7 @@ import {
   analytics,
   delete_coupon,
   download_coupon,
+  get_coupon,
   get_coupons,
   get_qr_code,
   redeem_coupon,
@@ -18,7 +19,16 @@ const router = Router();
 const upload = multer({ dest: "uploads/" });
 
 router.get("/", authorize(["user", "business"]), get_coupons);
-router.post("/", upload.single("photo"), authorize(["business"]), add_coupon);
+router.get("/get", authorize(["user", "business"]), get_coupon);
+router.post(
+  "/",
+  upload.fields([
+    { name: "photo", maxCount: 1 },
+    { name: "carousel_image", maxCount: 1 },
+  ]),
+  authorize(["business"]),
+  add_coupon
+);
 router.patch(
   "/",
   upload.single("photo"),

@@ -83,6 +83,34 @@ const get_coupons = async (req: AuthenticatedRequest, response: Response) => {
   }
 };
 
+const get_coupon = async (req: AuthenticatedRequest, response: Response) => {
+  const { id } = req.query || {};
+  const res = createResponseHandler(response);
+  const error = validateRequiredFields({ id });
+  if (error) {
+    res.status(400).json({ message: error });
+    return;
+  }
+  if (!isObjectIdOrHexString(id)) {
+    res.status(400).json({ message: "Invalid Id" });
+    return;
+  }
+
+  const coupon = await Coupon.findById(id, {
+    __v: 0,
+  });
+
+  if (!coupon) {
+    res.status(404).json({ message: "Coupon with this ID doesn't exist" });
+    return;
+  }
+
+  res.json({
+    message: "Coupon fetched successfully",
+    data: coupon,
+  });
+};
+
 const add_coupon = async (req: AuthenticatedRequest, response: Response) => {
   const res = createResponseHandler(response);
   const {
@@ -96,8 +124,14 @@ const add_coupon = async (req: AuthenticatedRequest, response: Response) => {
     start,
     end,
     add_to_carousel,
+    carousel_image,
   } = req.body || {};
-  const photo = req.file;
+
+  const photo = (req.files as { [fieldname: string]: Express.Multer.File[] })
+    ?.photo?.[0];
+  const carouselImage = (
+    req.files as { [fieldname: string]: Express.Multer.File[] }
+  )?.carousel_image?.[0];
 
   const error = validateRequiredFields({ category_id, start, end, photo });
   if (error) {
@@ -127,9 +161,11 @@ const add_coupon = async (req: AuthenticatedRequest, response: Response) => {
   }
 
   let photo_url;
+  let carousel_photo_url;
 
   try {
     photo_url = await uploadService(photo, "image");
+    carousel_photo_url = await uploadService(carouselImage, "image");
   } catch (error) {
     console.log(error);
     res
@@ -153,6 +189,7 @@ const add_coupon = async (req: AuthenticatedRequest, response: Response) => {
       end: endDate,
       add_to_carousel,
       photo_url,
+      carousel_photo_url,
     } as any;
 
     if (discount_percentage) {
@@ -643,4 +680,5 @@ export {
   redeem_coupon,
   share_coupon,
   analytics,
+  get_coupon,
 };
