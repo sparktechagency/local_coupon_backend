@@ -67,16 +67,16 @@ const update_category = async (req: Request, res: Response) => {
   const { id, name } = req.body || {};
   const file = req.file;
 
-  const error = validateRequiredFields({ id, name, file });
+  const error = validateRequiredFields({ id });
   if (error) {
     res.status(400).json({ message: error });
     return;
   }
 
-  if (file?.originalname?.split(".")[1] !== "svg") {
-    res.status(400).json({ message: "Icon should be .svg format" });
-    return;
-  }
+  // if (file?.originalname?.split(".")[1] !== "svg") {
+  //   res.status(400).json({ message: "Icon should be .svg format" });
+  //   return;
+  // }
 
   const category = await Categories.findOne({ _id: id });
 
@@ -89,7 +89,10 @@ const update_category = async (req: Request, res: Response) => {
     const icon_url = await uploadService(file, "image");
 
     try {
-      await category.updateOne({ name, icon_url });
+      await category.updateOne({
+        ...(name && { name }),
+        ...(icon_url && { icon_url }),
+      });
       res.status(200).json({ message: "Category updated successfully" });
       return;
     } catch (error) {
