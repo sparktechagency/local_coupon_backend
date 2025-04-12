@@ -34,7 +34,7 @@ const generateAccessToken = (id: string, email: string, role: string) => {
     { id, email, role, purpose: "accessToken" },
     ACCESS_TOKEN_SECRET,
     {
-      expiresIn: "1d",
+      expiresIn: "1y",
     }
   );
 };

@@ -6,6 +6,9 @@ const get_dashboard = async (req: Request, response: Response) => {
   const res = createResponseHandler(response);
   const { subscription_year, user_year } = req.query;
 
+  const subscriptionYear = subscription_year || new Date().getFullYear();
+  const userYear = user_year || new Date().getFullYear();
+
   const total_users = await User.countDocuments();
   const premium_users = await User.countDocuments({ isSubscribed: true });
   const business_owners = await User.countDocuments({ role: "business" });
@@ -15,8 +18,8 @@ const get_dashboard = async (req: Request, response: Response) => {
     {
       $match: {
         createdAt: {
-          $gte: new Date(`${subscription_year}-01-01T00:00:00.000Z`),
-          $lte: new Date(`${subscription_year}-12-31T23:59:59.999Z`),
+          $gte: new Date(`${subscriptionYear}-01-01T00:00:00.000Z`),
+          $lte: new Date(`${subscriptionYear}-12-31T23:59:59.999Z`),
         },
       },
     },
@@ -28,7 +31,7 @@ const get_dashboard = async (req: Request, response: Response) => {
   });
 
   const subscription_growth = {
-    year: subscription_year,
+    year: subscriptionYear,
     chart: {
       labels: [
         "Jan",
@@ -52,8 +55,8 @@ const get_dashboard = async (req: Request, response: Response) => {
     {
       $match: {
         createdAt: {
-          $gte: new Date(`${user_year}-01-01`),
-          $lte: new Date(`${user_year}-12-31T23:59:59.999Z`),
+          $gte: new Date(`${userYear}-01-01`),
+          $lte: new Date(`${userYear}-12-31T23:59:59.999Z`),
         },
       },
     },
@@ -73,7 +76,7 @@ const get_dashboard = async (req: Request, response: Response) => {
   });
 
   const user_growth = {
-    year: user_year,
+    year: userYear,
     chart: {
       labels: [
         "Jan",
