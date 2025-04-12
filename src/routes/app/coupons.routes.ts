@@ -19,7 +19,7 @@ const router = Router();
 const upload = multer({ dest: "uploads/" });
 
 router.get("/", authorize(["user", "business"]), get_coupons);
-router.get("/get", authorize(["user", "business"]), get_coupon);
+router.get("/get", get_coupon);
 router.post(
   "/",
   upload.fields([

@@ -11,7 +11,7 @@ const userRoutes = [
   {
     path: "/profile",
     router: userRouter.profileRoutes,
-    middleware: authorize(["user", "business"]),
+    // middleware: authorize(["user", "business"]),
   },
   {
     path: "/stripe",
@@ -25,8 +25,7 @@ const userRoutes = [
   },
   {
     path: "/contact-us",
-    router: userRouter.contactUsRoutes,
-    middleware: authorize(["user", "business"]),
+    router: userRouter.contactUsRoutes
   },
   {
     path: "/coupons",
@@ -40,8 +39,7 @@ const userRoutes = [
   },
   {
     path: "/categories",
-    router: userRouter.categoriesRoutes,
-    middleware: authorize(["user", "business"]),
+    router: userRouter.categoriesRoutes
   },
 ];
 

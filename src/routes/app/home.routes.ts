@@ -4,7 +4,7 @@ import { Router } from "express";
 
 const router = Router();
 
-router.get("/", authorize(["user", "business"]), home);
+router.get("/", home);
 router.get("/analytics", authorize(["business"]), analytics);
 
 export default router;

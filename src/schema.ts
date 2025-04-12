@@ -281,7 +281,6 @@ const Visit = new Schema({
   visitor: {
     type: Schema.Types.ObjectId,
     ref: "User",
-    required: true,
   },
   coupon: {
     type: Schema.Types.ObjectId,
