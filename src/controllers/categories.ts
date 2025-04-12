@@ -3,6 +3,7 @@ import validateRequiredFields from "@utils/validateFields";
 import { Request, Response } from "express";
 import { Categories } from "@db";
 import createResponseHandler from "@utils/response_handler";
+import { isObjectIdOrHexString } from "mongoose";
 
 const get_categories = async (req: Request, response: Response) => {
   const res = createResponseHandler(response);
@@ -109,6 +110,11 @@ const update_category = async (req: Request, res: Response) => {
 
 const delete_category = async (req: Request, res: Response) => {
   const { id } = req.query || {};
+
+  if (!id && !isObjectIdOrHexString(id)) {
+    res.status(400).json({ message: "Invalid category id" });
+    return;
+  }
 
   const category = await Categories.findById(id);
 
