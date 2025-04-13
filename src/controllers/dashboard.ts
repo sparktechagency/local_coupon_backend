@@ -110,16 +110,31 @@ const get_dashboard = async (req: Request, response: Response) => {
 
 const get_recent_transactions = async (req: Request, response: Response) => {
   const res = createResponseHandler(response);
+  const { limit, page } = req.query;
+  const limitNumber = Number(limit) || 10;
+  const pageNumber = Number(page) || 1;
+  const skip = (pageNumber - 1) * limitNumber;
   try {
     const transactions = await Coupon.find()
       .populate({
         path: "createdBy",
         select: "name",
       })
-      .sort({ updatedAt: -1 });
+      .sort({ updatedAt: -1 })
+      .skip(skip)
+      .limit(limitNumber);
+    const totalTransactions = await Coupon.countDocuments();
+    const totalPages = Math.ceil(totalTransactions / limitNumber);
+    const currentPage = pageNumber;
     res.json({
       message: "Recent transactions fetched successfully",
       data: transactions,
+      meta: {
+        total: totalTransactions,
+        totalPages,
+        currentPage,
+        limit: limitNumber,
+      }
     });
   } catch (error) {
     console.log(error);
