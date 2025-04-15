@@ -10,6 +10,7 @@ const get_users = async (req: Request, response: Response): Promise<void> => {
     page: pageFromQuery,
     limit: limitFromQuery,
     premium,
+    query,
   } = req.query || {};
 
   if (!type) {
@@ -30,6 +31,12 @@ const get_users = async (req: Request, response: Response): Promise<void> => {
     role: type,
     ...(premium && {
       isSubscribed: true,
+    }),
+    ...(query && {
+      $or: [
+        { email: { $regex: query, $options: "i" } },
+        { name: { $regex: query, $options: "i" } },
+      ],
     }),
   };
 
@@ -56,7 +63,11 @@ const get_users = async (req: Request, response: Response): Promise<void> => {
     limit,
   };
 
-  res.json({ message: "hello", data: users, meta: pagination });
+  res.json({
+    message: "Users fetched successfully",
+    data: users,
+    meta: pagination,
+  });
 };
 
 const toggle_ban = async (req: Request, response: Response) => {

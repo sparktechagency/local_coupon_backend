@@ -16,22 +16,22 @@ const router = Router();
 
 const upload = multer({ dest: "uploads/" });
 
-router.get("/", authorize(["user", "business"]), get_profile);
+router.get("/", authorize(["user", "business", "admin"]), get_profile);
 router.get("/business-profile", get_business_profile);
 router.get("/last-visits", authorize(["user", "business"]), get_last_visits);
-router.put("/", authorize(["user", "business"]), update_profile);
+router.put("/", authorize(["user", "business", "admin"]), update_profile);
 router.put(
   "/picture",
-  authorize(["user", "business"]),
+  authorize(["user", "business", "admin"]),
   upload.single("picture"),
   update_picture
 );
-router.delete("/", authorize(["user", "business"]), delete_profile);
+router.delete("/", authorize(["user", "business", "admin"]), delete_profile);
 router.post(
   "/change-password",
-  authorize(["user", "business"]),
+  authorize(["user", "business", "admin"]),
   change_password
 );
-router.get("/invite", authorize(["user", "business"]), invite);
+router.get("/invite", authorize(["user", "business", "admin"]), invite);
 
 export default router;
