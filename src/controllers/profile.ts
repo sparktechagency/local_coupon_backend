@@ -76,6 +76,7 @@ const get_business_profile = async (
     companyAddress: 1,
     socials: 1,
     location: 1,
+    hoursOfOperation: 1
   });
 
   const filters = {

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Coupon, Notification, Payment, User } from "@db";
+import { Coupon, DownloadedCoupon, Notification, Payment, User } from "@db";
 import createResponseHandler from "@utils/response_handler";
 
 const get_dashboard = async (req: Request, response: Response) => {
@@ -115,15 +115,26 @@ const get_recent_transactions = async (req: Request, response: Response) => {
   const pageNumber = Number(page) || 1;
   const skip = (pageNumber - 1) * limitNumber;
   try {
-    const transactions = await Coupon.find()
+    const transactions = await DownloadedCoupon.find({ redeemed: false })
       .populate({
-        path: "createdBy",
+        path: "user",
         select: "name",
+      })
+      .populate({
+        path: "coupon",
+        select:
+          "photo_url regular_amount discount_amount mxn_amount promo_title discount_percentage end redeemCount shareCount createdBy",
+        populate: {
+          path: "createdBy",
+          select: "companyName",
+        },
       })
       .sort({ updatedAt: -1 })
       .skip(skip)
       .limit(limitNumber);
-    const totalTransactions = await Coupon.countDocuments();
+    const totalTransactions = await DownloadedCoupon.countDocuments({
+      redeemed: false,
+    });
     const totalPages = Math.ceil(totalTransactions / limitNumber);
     const currentPage = pageNumber;
     res.json({

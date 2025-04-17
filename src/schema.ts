@@ -60,7 +60,36 @@ const User = new Schema(
     },
     hoursOfOperation: {
       type: Array,
-      default: null,
+      default: [
+        {
+          day: "Monday",
+          hours: "09:00 AM - 06:00 PM",
+        },
+        {
+          day: "Tuesday",
+          hours: "09:00 AM - 06:00 PM",
+        },
+        {
+          day: "Wednesday",
+          hours: "09:00 AM - 06:00 PM",
+        },
+        {
+          day: "Thursday",
+          hours: "09:00 AM - 06:00 PM",
+        },
+        {
+          day: "Friday",
+          hours: "09:00 AM - 06:00 PM",
+        },
+        {
+          day: "Saturday",
+          hours: "10:00 AM - 04:00 PM",
+        },
+        {
+          day: "Sunday",
+          hours: "Closed",
+        },
+      ],
     },
     socials: {
       type: Object,
