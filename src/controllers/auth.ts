@@ -131,8 +131,8 @@ const forgot_password = async (req: Request, response: Response) => {
   }
 
   const emailError = await checkUserExists("email", email);
-  if (emailError) {
-    res.status(400).json({ message: emailError });
+  if (!emailError) {
+    res.status(400).json({ message: "Email doesn't exist" });
     return;
   }
 
