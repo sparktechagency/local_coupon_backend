@@ -38,6 +38,7 @@ const get_profile = async (req: AuthenticatedRequest, response: Response) => {
     gender,
     location,
     phone,
+    isSubscribed,
   } = user;
 
   const responsePayload: any = {
@@ -51,6 +52,7 @@ const get_profile = async (req: AuthenticatedRequest, response: Response) => {
     gender,
     location,
     phone,
+    isSubscribed,
   };
 
   // if (role === "business") {
@@ -76,7 +78,7 @@ const get_business_profile = async (
     companyAddress: 1,
     socials: 1,
     location: 1,
-    hoursOfOperation: 1
+    hoursOfOperation: 1,
   });
 
   const filters = {
@@ -111,10 +113,14 @@ const get_business_profile = async (
 
   await Visit.create({ visitor: req.user?.id, business: profile._id });
 
+  const isProfileCompleted = profile.companyName && profile.companyAddress;
+  console.log({ isProfileCompleted });
+
   res.status(200).json({
     message: "Business profile retrieved successfully",
     data: {
       profile,
+      isProfileCompleted: isProfileCompleted ? true : false,
       categories,
       coupons,
       meta: {
