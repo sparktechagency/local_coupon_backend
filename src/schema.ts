@@ -79,6 +79,11 @@ const User = new Schema(
       type: Date,
       default: null,
     },
+    subscriptionPackage: {
+      type: Schema.Types.ObjectId,
+      ref: "Subscription",
+      default: null,
+    },
     invitedUsers: {
       type: [Schema.Types.ObjectId],
       ref: "User",

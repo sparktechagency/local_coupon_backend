@@ -41,6 +41,10 @@ const get_users = async (req: Request, response: Response): Promise<void> => {
   };
 
   const users = await User.find(filters)
+    .populate({
+      path: "subscriptionPackage",
+      select: "name priceInCents durationInMonths",
+    })
     .skip(skip)
     .limit(limit)
     .select("-passwordHash -__v -providers -invitedUsers")

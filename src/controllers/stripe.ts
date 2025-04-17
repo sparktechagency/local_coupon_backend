@@ -107,6 +107,7 @@ const stripe_webhook = async (req: Request, res: Response) => {
         subscriptionExpiry: new Date(
           Date.now() + packageId?.durationInMonths * 30 * 24 * 60 * 60 * 1000
         ),
+        subscriptionPackage: packageId._id,
       });
 
       triggerNotification("NEW_SUBSCRIPTION", {});
