@@ -50,14 +50,7 @@ const get_users = async (req: Request, response: Response): Promise<void> => {
     .select("-passwordHash -__v -providers -invitedUsers")
     .sort({ createdAt: -1 })
     .lean();
-  if (!users) {
-    res.status(404).json({ message: "No users found" });
-    return;
-  }
-  if (users.length === 0) {
-    res.status(404).json({ message: "No users found" });
-    return;
-  }
+
   const totalUsers = await User.countDocuments(filters);
   const totalPages = Math.ceil(totalUsers / limit);
   const pagination = {
@@ -69,7 +62,7 @@ const get_users = async (req: Request, response: Response): Promise<void> => {
 
   res.json({
     message: "Users fetched successfully",
-    data: users,
+    data: users || [],
     meta: pagination,
   });
 };

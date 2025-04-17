@@ -5,7 +5,6 @@ import {
   get_last_visits,
   get_profile,
   invite,
-  update_picture,
   update_profile,
 } from "@controllers/profile";
 import authorize from "@middleware/auth";
@@ -19,12 +18,11 @@ const upload = multer({ dest: "uploads/" });
 router.get("/", authorize(["user", "business", "admin"]), get_profile);
 router.get("/business-profile", get_business_profile);
 router.get("/last-visits", authorize(["user", "business"]), get_last_visits);
-router.put("/", authorize(["user", "business", "admin"]), update_profile);
 router.put(
-  "/picture",
-  authorize(["user", "business", "admin"]),
+  "/",
   upload.single("picture"),
-  update_picture
+  authorize(["user", "business", "admin"]),
+  update_profile
 );
 router.delete("/", authorize(["user", "business", "admin"]), delete_profile);
 router.post(

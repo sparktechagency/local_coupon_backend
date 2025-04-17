@@ -134,7 +134,7 @@ const get_recent_transactions = async (req: Request, response: Response) => {
         totalPages,
         currentPage,
         limit: limitNumber,
-      }
+      },
     });
   } catch (error) {
     console.log(error);
@@ -144,8 +144,23 @@ const get_recent_transactions = async (req: Request, response: Response) => {
 
 const get_notifications = async (req: Request, response: Response) => {
   const res = createResponseHandler(response);
+  const { count } = req.query;
+
+  if (count) {
+    const notifications = await Notification.countDocuments({ isRead: false });
+    res.json({
+      message: "Notifications count fetched successfully",
+      data: { count: notifications },
+    });
+    return;
+  }
+
   try {
     const notifications = await Notification.find().sort({ createdAt: -1 });
+    await Notification.updateMany(
+      { isRead: false },
+      { $set: { isRead: true } }
+    );
     res.json({
       message: "Notifications fetched successfully",
       data: notifications,

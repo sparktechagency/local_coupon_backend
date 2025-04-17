@@ -191,6 +191,7 @@ const update_profile = async (
     phone,
     socials,
   } = req.body;
+
   const user = await User.findById(req.user?.id);
   if (!user || user.isDeleted) {
     res.status(404).json({ message: "User not found" });
@@ -203,8 +204,9 @@ const update_profile = async (
     });
     return;
   }
+  const picture = req.file;
 
-  if (companyName || companyAddress || socials || hoursOfOperation || phone) {
+  if (companyName || companyAddress || socials || hoursOfOperation) {
     if (user.role !== "business") {
       res
         .status(403)
@@ -213,26 +215,27 @@ const update_profile = async (
     }
     user.companyName = companyName || user.companyName;
     user.companyAddress = companyAddress || user.companyAddress;
-    user.socials = socials || user.socials;
+    user.socials = JSON.parse(socials) || user.socials;
     user.phone = phone || user.phone;
 
     if (hoursOfOperation) {
       // Check if hoursOfOperation is an array and has 7 elements
-      if (!Array.isArray(hoursOfOperation)) {
+      const parsedHoursOfOperation = JSON.parse(hoursOfOperation);
+      if (!Array.isArray(parsedHoursOfOperation)) {
         res.status(400).json({
           message: "Hours of operation should be an array.",
         });
         return;
       }
 
-      const notValid = validateHoursOfOperation(hoursOfOperation);
+      const notValid = validateHoursOfOperation(parsedHoursOfOperation);
 
       if (notValid) {
         res.status(400).json(notValid);
         return;
       }
 
-      user.hoursOfOperation = hoursOfOperation || user.hoursOfOperation;
+      user.hoursOfOperation = parsedHoursOfOperation || user.hoursOfOperation;
     }
   }
 
@@ -247,42 +250,19 @@ const update_profile = async (
     }
     user.dateOfBirth = parsedDate;
   }
+
+  if (picture) {
+    const uploadedPicture = await uploadService(picture, "image");
+    if (!uploadedPicture) {
+      res.status(400).json({ message: "Failed to upload picture" });
+      return;
+    }
+    user.picture = uploadedPicture;
+  }
+
   await user.save();
 
   res.status(200).json({ message: "Profile updated successfully" });
-};
-
-const update_picture = async (
-  req: AuthenticatedRequest,
-  response: Response
-) => {
-  const res = createResponseHandler(response);
-  const picture = req.file;
-  if (!picture) {
-    res.status(400).json({ message: "No picture provided" });
-    return;
-  }
-  const user = await User.findById(req.user?.id);
-  if (!user || user.isDeleted) {
-    res.status(404).json({ message: "User not found" });
-    return;
-  }
-
-  if (user.emailVerified === false) {
-    res.status(403).json({
-      message: "Please verify your email before updating your profile picture",
-    });
-    return;
-  }
-
-  const uploadedPicture = await uploadService(picture, "image");
-  if (!uploadedPicture) {
-    res.status(400).json({ message: "Failed to upload picture" });
-    return;
-  }
-  user.picture = uploadedPicture;
-  await user.save();
-  res.status(200).json({ message: "Picture updated successfully" });
 };
 
 const delete_profile = async (
@@ -363,7 +343,6 @@ export {
   get_business_profile,
   get_last_visits,
   update_profile,
-  update_picture,
   delete_profile,
   change_password,
   invite,
