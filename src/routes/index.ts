@@ -20,8 +20,7 @@ const userRoutes = [
   },
   {
     path: "/legal",
-    router: userRouter.legalRoutes,
-    middleware: authorize(["user"]),
+    router: userRouter.legalRoutes
   },
   {
     path: "/contact-us",

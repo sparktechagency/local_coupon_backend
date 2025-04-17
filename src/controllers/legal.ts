@@ -4,7 +4,7 @@ import createResponseHandler from "@utils/response_handler";
 
 const get_faqs = async (req: Request, response: Response) => {
   const res = createResponseHandler(response);
-  const faqs = await FAQs.find({}, { _id: 0, __v: 0 });
+  const faqs = await FAQs.find({}, { __v: 0 });
   if (!faqs || faqs.length === 0) {
     res.json({ message: "No FAQs found" });
     return;
@@ -38,27 +38,60 @@ const get_privacy = async (req: Request, response: Response) => {
   });
 };
 
-const update_faqs = async (req: Request, response: Response) => {
+// const update_faqs = async (req: Request, response: Response) => {
+//   const res = createResponseHandler(response);
+//   const faqs = req.body;
+//   if (!faqs || !Array.isArray(faqs)) {
+//     res.status(400).json({ message: "Invalid request body" });
+//     return;
+//   }
+
+//   const is_valid_faq = faqs.every((faq) => {
+//     return faq.question && faq.answer;
+//   });
+
+//   if (!is_valid_faq) {
+//     res.status(400).json({ message: "Invalid FAQ Object" });
+//     return;
+//   }
+
+//   await FAQs.deleteMany({});
+//   await FAQs.insertMany(faqs);
+
+//   res.json({ message: "FAQs updated" });
+// };
+
+const add_faq = async (req: Request, response: Response) => {
+  const { question, answer } = req.body;
   const res = createResponseHandler(response);
-  const faqs = req.body;
-  if (!faqs || !Array.isArray(faqs)) {
+  if (!question || !answer) {
     res.status(400).json({ message: "Invalid request body" });
     return;
   }
-
-  const is_valid_faq = faqs.every((faq) => {
-    return faq.question && faq.answer;
+  const faq = await FAQs.create({
+    question,
+    answer,
   });
-
-  if (!is_valid_faq) {
-    res.status(400).json({ message: "Invalid FAQ Object" });
+  if (!faq) {
+    res.status(500).json({ message: "Error creating FAQ" });
     return;
   }
+  res.json({ message: "FAQ created successfully", data: faq });
+};
 
-  await FAQs.deleteMany({});
-  await FAQs.insertMany(faqs);
-
-  res.json({ message: "FAQs updated" });
+const delete_faq = async (req: Request, response: Response) => {
+  const { id } = req.body;
+  const res = createResponseHandler(response);
+  if (!id) {
+    res.status(400).json({ message: "Invalid request body" });
+    return;
+  }
+  const faq = await FAQs.findByIdAndDelete(id);
+  if (!faq) {
+    res.status(404).json({ message: "FAQ not found" });
+    return;
+  }
+  res.json({ message: "FAQ deleted successfully", data: faq });
 };
 
 const update_terms = async (req: Request, response: Response) => {
@@ -95,7 +128,8 @@ export {
   get_faqs,
   get_terms,
   get_privacy,
-  update_faqs,
+  add_faq,
+  delete_faq,
   update_terms,
   update_privacy,
 };
