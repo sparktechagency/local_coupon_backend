@@ -1,6 +1,6 @@
 import { AccessTokenPayload } from "@utils/jwt";
 import { Request, Response } from "express";
-import { Categories, Coupon, DownloadedCoupon, Visit } from "@db";
+import { Categories, Coupon, DownloadedCoupon, User, Visit } from "@db";
 import createResponseHandler from "@utils/response_handler";
 
 interface AuthenticatedRequest extends Request {
@@ -14,10 +14,19 @@ const home = async (req: AuthenticatedRequest, response: Response) => {
     categories = await Categories.find({}, { __v: 0 });
   }
 
+  let creatorIds = [];
+  if (query) {
+    const creators = await User.find(
+      { companyName: new RegExp(query as string, "i") },
+      { location: new RegExp(location as string, "i") },
+      { _id: 1 }
+    );
+    creatorIds = creators.map((creator: any) => creator._id);
+  }
+
   const filters = {
-    ...(query && { "createdBy.companyName": new RegExp(query as string, "i") }),
+    ...(query && { createdBy: { $in: creatorIds } }), // Filter by _id
     ...(category && { category }),
-    ...(location && { "createdBy.location": location }),
   };
 
   const pageNumber = parseInt(page as string) || 1;
@@ -29,7 +38,7 @@ const home = async (req: AuthenticatedRequest, response: Response) => {
   const couponsFromDB = await Coupon.find(filters)
     .populate({
       path: "createdBy",
-      select: "name companyName",
+      select: "name companyName location",
     })
     .skip(skip)
     .limit(limitNumber)
@@ -50,7 +59,11 @@ const home = async (req: AuthenticatedRequest, response: Response) => {
   const coupons = couponsFromDB.filter((coupon) => !coupon.add_to_carousel);
 
   res.json({
-    data: { categories, carousel, coupons },
+    data: {
+      ...(!query && { categories }),
+      ...(!query && { carousel }),
+      coupons,
+    },
     message: "Home fetched successfully",
     meta: {
       totalCoupons,
