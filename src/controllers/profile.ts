@@ -79,6 +79,7 @@ const get_business_profile = async (
     socials: 1,
     location: 1,
     hoursOfOperation: 1,
+    picture: 1,
   });
 
   const filters = {
