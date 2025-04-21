@@ -399,7 +399,8 @@ const download_coupon = async (
   }
 };
 
-const get_qr_code = async (req: AuthenticatedRequest, res: Response) => {
+const get_qr_code = async (req: AuthenticatedRequest, response: Response) => {
+  const res = createResponseHandler(response);
   const { id } = req.query || {};
 
   const downloadedCoupon = await DownloadedCoupon.findById(id);
@@ -422,7 +423,11 @@ const get_qr_code = async (req: AuthenticatedRequest, res: Response) => {
 
     const qrCodeImage = await qr.toDataURL(verificationURL);
 
-    res.send(`<img src="${qrCodeImage}" alt="QR Code"/>`);
+    // res.send(`<img src="${qrCodeImage}" alt="QR Code"/>`);
+    res.json({
+      message: "QR code generated successfully",
+      data: verificationURL,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Failed to generate QR code" });
