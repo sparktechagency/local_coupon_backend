@@ -52,7 +52,7 @@ const get_profile = async (req: AuthenticatedRequest, response: Response) => {
     dateOfBirth,
     gender,
     location,
-    countryDialCode,
+    countryDialCode: countryDialCode || "+1",
     phone,
     isSubscribed,
   };
