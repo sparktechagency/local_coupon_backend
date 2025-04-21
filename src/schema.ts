@@ -14,6 +14,9 @@ const User = new Schema(
       type: String,
       required: true,
     },
+    countryDialCode: {
+      type: String,
+    },
     phone: {
       type: String,
     },

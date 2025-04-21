@@ -37,6 +37,7 @@ const get_profile = async (req: AuthenticatedRequest, response: Response) => {
     dateOfBirth,
     gender,
     location,
+    countryDialCode,
     phone,
     isSubscribed,
   } = user;
@@ -51,6 +52,7 @@ const get_profile = async (req: AuthenticatedRequest, response: Response) => {
     dateOfBirth,
     gender,
     location,
+    countryDialCode,
     phone,
     isSubscribed,
   };
@@ -196,6 +198,7 @@ const update_profile = async (
     companyName,
     companyAddress,
     hoursOfOperation,
+    countryDialCode,
     phone,
     socials,
   } = req.body;
@@ -224,6 +227,7 @@ const update_profile = async (
     user.companyName = companyName || user.companyName;
     user.companyAddress = companyAddress || user.companyAddress;
     user.socials = JSON.parse(socials) || user.socials;
+    user.countryDialCode = countryDialCode || user.countryDialCode;
     user.phone = phone || user.phone;
 
     if (hoursOfOperation) {
