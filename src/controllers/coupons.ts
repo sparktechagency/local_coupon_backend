@@ -39,7 +39,12 @@ const get_coupons = async (req: AuthenticatedRequest, response: Response) => {
 
     res.json({
       message: "Coupons fetched successfully",
-      data: coupons,
+      data: coupons.map((c) => ({
+        _id: c._id,
+        coupon: {
+          ...c.toObject(),
+        },
+      })),
       meta: {
         total: totalCoupons,
         page: pageNumber,
