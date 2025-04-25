@@ -1,12 +1,30 @@
 import uploadService from "@services/uploadService";
 import validateRequiredFields from "@utils/validateFields";
 import { Request, Response } from "express";
-import { Categories } from "@db";
+import { Categories, Coupon } from "@db";
 import createResponseHandler from "@utils/response_handler";
 import { isObjectIdOrHexString } from "mongoose";
 
 const get_categories = async (req: Request, response: Response) => {
   const res = createResponseHandler(response);
+  const { popular } = req.query;
+
+  if (popular) {
+    try {
+      const categories = await Coupon.find(
+        { add_to_carousel: true },
+        { __v: 0 }
+      );
+      res.json({
+        message: "Popular Categories fetched successfully",
+        data: categories,
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  }
+
   try {
     const categories = await Categories.find({}, { __v: 0 });
     res.json({
