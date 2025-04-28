@@ -121,6 +121,14 @@ const User = new Schema(
       ref: "User",
       default: [],
     },
+    coordinates: {
+      lat: {
+        type: Schema.Types.Decimal128,
+      },
+      lng: {
+        type: Schema.Types.Decimal128,
+      },
+    },
   },
   { timestamps: true }
 );
