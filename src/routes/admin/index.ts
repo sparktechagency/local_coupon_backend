@@ -4,6 +4,7 @@ import categoriesRoutes from "./categories.routes";
 import panelRoutes from "./panel.routes";
 import usersRoutes from "./users.routes";
 import dashboardRoutes from "./dashboard.routes";
+import feedbackRoutes from "./feedback.routes";
 
 export {
   subscriptionsRoutes,
@@ -12,4 +13,5 @@ export {
   panelRoutes,
   usersRoutes,
   dashboardRoutes,
+  feedbackRoutes,
 };

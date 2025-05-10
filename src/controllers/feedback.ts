@@ -67,4 +67,29 @@ const report = async (req: AuthenticatedRequest, response: Response) => {
   res.status(200).json({ message: "Report sent successfully" });
 };
 
-export { contact_us, report };
+const get_reports = async (req: Request, response: Response) => {
+  const res = createResponseHandler(response);
+  const { page = 1, limit = 10 } = req.query;
+  const skip = (Number(page) - 1) * Number(limit);
+  const reports = await Report.find()
+    .skip(skip)
+    .limit(Number(limit))
+    .populate("user", "name email")
+    .populate("coupon")
+    .populate("profile", "name email")
+    .sort({ createdAt: -1 });
+  const totalReports = await Report.countDocuments();
+  const totalPages = Math.ceil(totalReports / Number(limit));
+  res.status(200).json({
+    message: "Reports fetched successfully",
+    data: reports,
+    meta: {
+      totalReports,
+      totalPages,
+      currentPage: Number(page),
+      limit: Number(limit),
+    },
+  });
+};
+
+export { contact_us, report, get_reports };
