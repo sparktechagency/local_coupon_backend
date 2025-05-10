@@ -18,10 +18,33 @@ import { decode, JwtPayload } from "jsonwebtoken";
 import checkSubscriptionStatus from "@utils/checkSubscriptionStatus";
 import { triggerNotification } from "@services/notificationService";
 import createResponseHandler from "@utils/response_handler";
+import uploadService from "@services/uploadService";
 
 const signup = async (req: Request, response: Response) => {
   const res = createResponseHandler(response);
   const { name, email, phone, password, role, invite_id } = req?.body || {};
+  const { id_proof, verification_document } =
+    (req.files as {
+      id_proof?: Express.Multer.File[];
+      verification_document?: Express.Multer.File[];
+    }) || {};
+
+  if (role === "business" && !id_proof) {
+    res.status(400).json({ message: "ID proof is required for business" });
+    return;
+  }
+
+  if (role === "business" && !verification_document) {
+    res
+      .status(400)
+      .json({ message: "Verification document is required for business" });
+    return;
+  }
+
+  if (role !== "user" && role !== "business") {
+    res.status(400).json({ message: "Invalid role" });
+    return;
+  }
 
   const error = validateRequiredFields({ name, email, phone, password });
   if (error) {
@@ -41,8 +64,31 @@ const signup = async (req: Request, response: Response) => {
     return;
   }
 
+  let id_url = null;
+  let verification_url = null;
+
+  if (role === "business") {
+    if (id_proof) {
+      id_url = await uploadService(id_proof?.[0], "image");
+    }
+    if (verification_document) {
+      verification_url = await uploadService(
+        verification_document?.[0],
+        "image"
+      );
+    }
+  }
+
   const passwordHash = await plainPasswordToHash(password);
-  const newUser = await User.create({ name, email, phone, passwordHash, role });
+  const newUser = await User.create({
+    name,
+    email,
+    phone,
+    passwordHash,
+    role,
+    id_url,
+    verification_url,
+  });
   // await sendOTP(email, "signup");
   const otp = await sendOTP(email, "signup");
 

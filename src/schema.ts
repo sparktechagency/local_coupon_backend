@@ -129,6 +129,12 @@ const User = new Schema(
         type: Schema.Types.Decimal128,
       },
     },
+    id_url: {
+      type: String,
+    },
+    verification_url: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

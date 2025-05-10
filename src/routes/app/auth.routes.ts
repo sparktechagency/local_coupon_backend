@@ -13,10 +13,27 @@ import {
   resend_otp,
 } from "@controllers/auth";
 import authorize from "@middleware/auth";
+import multer from "multer";
 
 const router = Router();
+const upload = multer({
+  dest: "uploads/",
+});
 
-router.post("/signup", signup);
+router.post(
+  "/signup",
+  upload.fields([
+    {
+      name: "id_proof",
+      maxCount: 1,
+    },
+    {
+      name: "verification_document",
+      maxCount: 1,
+    },
+  ]),
+  signup
+);
 router.post("/verify-otp", verify_otp);
 router.post("/forgot-password", forgot_password);
 router.post("/reset-password", reset_password);
