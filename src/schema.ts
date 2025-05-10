@@ -360,6 +360,29 @@ const Notification = new Schema(
   { timestamps: true }
 );
 
+const Report = new Schema({
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  coupon: {
+    type: Schema.Types.ObjectId,
+    ref: "Coupon",
+  },
+  profile: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+  },
+  reason: {
+    type: String,
+    required: true,
+  },
+  details: {
+    type: String,
+  },
+});
+
 export {
   User,
   OTP,
@@ -373,4 +396,5 @@ export {
   Visit,
   DownloadedCoupon,
   Notification,
+  Report,
 };

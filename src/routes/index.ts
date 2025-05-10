@@ -20,11 +20,11 @@ const userRoutes = [
   },
   {
     path: "/legal",
-    router: userRouter.legalRoutes
+    router: userRouter.legalRoutes,
   },
   {
-    path: "/contact-us",
-    router: userRouter.contactUsRoutes
+    path: "/",
+    router: userRouter.feedbackRoutes,
   },
   {
     path: "/coupons",
@@ -38,7 +38,7 @@ const userRoutes = [
   },
   {
     path: "/categories",
-    router: userRouter.categoriesRoutes
+    router: userRouter.categoriesRoutes,
   },
 ];
 
