@@ -255,7 +255,8 @@ const update_profile = async (
   user.name = name || user.name;
   user.gender = gender || user.gender;
   user.location = location || user.location;
-  user.coordinates = JSON.parse(coordinates) || user.coordinates;
+  user.coordinates =
+    (coordinates && JSON.parse(coordinates)) || user.coordinates;
 
   if (dateOfBirth) {
     const parsedDate = parseDate(dateOfBirth);
