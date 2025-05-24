@@ -40,6 +40,8 @@ const get_profile = async (req: AuthenticatedRequest, response: Response) => {
     countryDialCode,
     phone,
     isSubscribed,
+    remaining_downloads,
+    remaining_uploads,
   } = user;
 
   const responsePayload: any = {
@@ -55,6 +57,8 @@ const get_profile = async (req: AuthenticatedRequest, response: Response) => {
     countryDialCode: countryDialCode || "+1",
     phone,
     isSubscribed,
+    remaining_downloads,
+    remaining_uploads,
   };
 
   // if (role === "business") {
