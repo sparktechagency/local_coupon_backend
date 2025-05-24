@@ -135,6 +135,14 @@ const User = new Schema(
     verification_url: {
       type: String,
     },
+    remaining_downloads: {
+      type: Number,
+      default: 20,
+    },
+    remaining_uploads: {
+      type: Number,
+      default: 3,
+    },
   },
   { timestamps: true }
 );
