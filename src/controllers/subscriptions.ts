@@ -2,10 +2,11 @@ import validateRequiredFields from "@utils/validateFields";
 import { Request, Response } from "express";
 import { Subscription } from "@db";
 import createResponseHandler from "@utils/response_handler";
+import { AccessTokenPayload } from "@utils/jwt";
 
 const add_subscription = async (req: Request, response: Response) => {
   const res = createResponseHandler(response);
-  const { name, priceInCents, durationInMonths, info } = req.body;
+  const { name, priceInCents, durationInMonths, info, type } = req.body;
   const error = validateRequiredFields({
     name,
     priceInCents,
@@ -13,6 +14,10 @@ const add_subscription = async (req: Request, response: Response) => {
   });
   if (error) {
     res.status(400).json({ message: error });
+    return;
+  }
+  if (type !== "user" && type !== "business") {
+    res.status(400).json({ message: "Invalid type" });
     return;
   }
   if (priceInCents < 0 || durationInMonths < 0) {
@@ -29,13 +34,24 @@ const add_subscription = async (req: Request, response: Response) => {
     priceInCents,
     durationInMonths,
     info,
+    type,
   });
   res.status(200).json({ message: `${name} plan created successfully` });
 };
 
-const get_subscriptions = async (req: Request, response: Response) => {
+interface AuthenticatedRequest extends Request {
+  user?: AccessTokenPayload;
+}
+
+const get_subscriptions = async (
+  req: AuthenticatedRequest,
+  response: Response
+) => {
   const res = createResponseHandler(response);
-  const subscriptions = await Subscription.find({}, { __v: 0 });
+  const subscriptions = await Subscription.find(
+    { ...(req.user?.role !== "admin" && { type: req.user?.role }) },
+    { __v: 0 }
+  );
   res.json({
     message: "Subscriptions fetched successfully",
     data: subscriptions,

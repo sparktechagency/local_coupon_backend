@@ -16,7 +16,7 @@ const userRoutes = [
   {
     path: "/stripe",
     router: userRouter.stripeRoutes,
-    middleware: authorize(["user"]),
+    middleware: authorize(["user", "business"]),
   },
   {
     path: "/legal",

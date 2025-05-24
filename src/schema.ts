@@ -229,6 +229,11 @@ const Subscription = new Schema({
   info: {
     type: [String],
   },
+  type: {
+    type: String,
+    enum: ["user", "business"],
+    default: "user",
+  },
 });
 
 const FAQs = new Schema({
