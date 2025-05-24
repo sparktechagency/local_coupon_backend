@@ -469,13 +469,6 @@ const switch_account = async (
     return;
   }
 
-  const user = await User.findById(req.user.id);
-
-  if (user?.role !== "business") {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
-  }
-
   const accessToken = generateAccessToken(
     req.user.id,
     req.user.email,
