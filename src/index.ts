@@ -19,7 +19,7 @@ const server = http.createServer(app);
 app.use(cors({ origin: "*" }));
 
 registerRoutesThatNeedsRawBody(app);
-app.use(express.json());
+app.use(express.json({ limit: "20mb" }));
 app.use(logger);
 registerUserRoutes(app);
 registerAdminRoutes(app);
