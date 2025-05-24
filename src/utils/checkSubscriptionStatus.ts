@@ -7,7 +7,11 @@ const checkSubscriptionStatus = async (userId: string) => {
     user.subscriptionExpiry &&
     new Date() > user.subscriptionExpiry
   ) {
-    await User.findByIdAndUpdate(userId, { isSubscribed: false });
+    await User.findByIdAndUpdate(userId, {
+      isSubscribed: false,
+      remaining_uploads: 3,
+      remaining_downloads: 20,
+    });
     return false;
   }
 

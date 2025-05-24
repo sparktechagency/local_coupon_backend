@@ -129,7 +129,6 @@ const add_coupon = async (req: AuthenticatedRequest, response: Response) => {
     start,
     end,
     add_to_carousel,
-    carousel_image,
   } = req.body || {};
 
   const photo = (req.files as { [fieldname: string]: Express.Multer.File[] })
@@ -164,6 +163,10 @@ const add_coupon = async (req: AuthenticatedRequest, response: Response) => {
     });
     return;
   }
+
+  await User.findByIdAndUpdate(req.user?.id, {
+    $inc: { remaining_uploads: -1 },
+  });
 
   let photo_url;
   let carousel_photo_url;
@@ -379,6 +382,10 @@ const download_coupon = async (
     res.status(404).json({ message: "Coupon with this ID doesn't exist" });
     return;
   }
+
+  await User.findByIdAndUpdate(req.user?.id, {
+    $inc: { remaining_downloads: -1 },
+  });
 
   const downloadedCoupon = await DownloadedCoupon.findOne({
     user: user?._id,
