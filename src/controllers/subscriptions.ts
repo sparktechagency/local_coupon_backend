@@ -59,7 +59,8 @@ const get_subscriptions = async (
 };
 const update_subscription = async (req: Request, response: Response) => {
   const res = createResponseHandler(response);
-  const { id, name, priceInCents, durationInMonths, info } = req.body || {};
+  const { id, name, priceInCents, durationInMonths, info, type } =
+    req.body || {};
   const error = validateRequiredFields({ id });
 
   if (error) {
@@ -67,12 +68,17 @@ const update_subscription = async (req: Request, response: Response) => {
     return;
   }
 
+  if (type !== "user" && type !== "business") {
+    res.status(400).json({ message: "Invalid type" });
+    return;
+  }
   try {
     await Subscription.findByIdAndUpdate(id, {
       ...(name && { name }),
       ...(priceInCents && { priceInCents }),
       ...(durationInMonths && { durationInMonths }),
       ...(info && { info }),
+      ...(type && { type }),
     });
 
     res.json({ message: "Subscription updated successfully" });
