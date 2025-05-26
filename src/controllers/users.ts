@@ -339,6 +339,28 @@ const edit_user = async (req: Request, response: Response) => {
   }
 };
 
-const delete_user = async (req: Request, response: Response) => {};
+const delete_user = async (req: Request, response: Response) => {
+  const res = createResponseHandler(response);
+  const { email } = req.query || {};
+
+  if (!email || typeof email !== "string") {
+    res.status(400).json({ message: "Email is required" });
+    return;
+  }
+
+  const emailError = await checkUserExists("email", email);
+  if (!emailError) {
+    res.status(400).json({ message: "Email doesn't exist" });
+    return;
+  }
+
+  try {
+    await User.findOneAndDelete({ email });
+    res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
 export { get_users, toggle_ban, add_user, edit_user, delete_user };
