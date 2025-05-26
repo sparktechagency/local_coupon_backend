@@ -42,6 +42,9 @@ const get_profile = async (req: AuthenticatedRequest, response: Response) => {
     isSubscribed,
     remaining_downloads,
     remaining_uploads,
+    companyName,
+    companyAddress,
+    socials,
   } = user;
 
   const responsePayload: any = {
@@ -59,6 +62,9 @@ const get_profile = async (req: AuthenticatedRequest, response: Response) => {
     isSubscribed,
     remaining_downloads,
     remaining_uploads,
+    companyName,
+    companyAddress,
+    socials,
   };
 
   // if (role === "business") {
