@@ -227,7 +227,117 @@ const add_user = async (req: Request, response: Response) => {
   }
 };
 
-const edit_user = async (req: Request, response: Response) => {};
+const edit_user = async (req: Request, response: Response) => {
+  const res = createResponseHandler(response);
+
+  const {
+    name,
+    email,
+    countryDialCode,
+    phone,
+    dateOfBirth,
+    gender,
+    location,
+    password,
+    role,
+    isSubscribed,
+    subscriptionExpiry,
+    companyName,
+    companyAddress,
+    hoursOfOperation,
+    socials,
+    free_downloads,
+    free_uploads,
+  } = req.body || {};
+
+  if (
+    !email ||
+    (role && ["user", "business"].indexOf(role) === -1) ||
+    (isSubscribed && ["true", "false"].indexOf(String(isSubscribed)) === -1) ||
+    (gender && ["male", "female", "other"].indexOf(gender) === -1)
+  ) {
+    res.status(400).json({ message: "Invalid request" });
+    return;
+  }
+
+  const emailError = await checkUserExists("email", email);
+  if (!emailError) {
+    res.status(400).json({ message: "Email doesn't exist" });
+    return;
+  }
+
+  const picture =
+    req.files && (req.files as any)["picture"]
+      ? (req.files as any)["picture"]
+      : {};
+  const id_proof =
+    req.files && (req.files as any)["id_proof"]
+      ? (req.files as any)["id_proof"]
+      : {};
+  const verification_id =
+    req.files && (req.files as any)["verification_id"]
+      ? (req.files as any)["verification_id"]
+      : {};
+
+  let picture_url;
+  let id_url;
+  let verification_url;
+
+  try {
+    if (picture[0]) {
+      picture_url = await uploadService(picture[0], "image");
+    }
+    if (id_proof[0]) {
+      id_url = await uploadService(id_proof[0], "image");
+    }
+    if (verification_id[0]) {
+      verification_url = await uploadService(verification_id[0], "image");
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error. Upload failed." });
+  }
+
+  let passwordHash;
+
+  if (password) {
+    passwordHash = await plainPasswordToHash(password);
+  }
+
+  try {
+    await User.findOneAndUpdate(
+      { email },
+      {
+        ...(name && { name }),
+        ...(countryDialCode && { countryDialCode }),
+        ...(phone && { phone }),
+        ...(dateOfBirth && { dateOfBirth: parseDate(dateOfBirth) }),
+        ...(gender && { gender }),
+        ...(location && { location }),
+        ...(passwordHash && { passwordHash }),
+        ...(role && { role }),
+        ...(isSubscribed && { isSubscribed }),
+        ...(subscriptionExpiry && { subscriptionExpiry }),
+        ...(companyName && { companyName }),
+        ...(companyAddress && { companyAddress }),
+        ...(hoursOfOperation && { hoursOfOperation }),
+        ...(socials && { socials }),
+        ...(free_downloads && { remaining_downloads: free_downloads }),
+        ...(free_uploads && { remaining_uploads: free_uploads }),
+        ...(picture_url && { picture: picture_url }),
+        ...(id_url && { id_url }),
+        ...(verification_url && { verification_url }),
+      }
+    );
+
+    res.json({
+      message: "User updated successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
 const delete_user = async (req: Request, response: Response) => {};
 
