@@ -13,6 +13,9 @@ const get_dashboard = async (req: Request, response: Response) => {
   const premium_users = await User.countDocuments({ isSubscribed: true });
   const business_owners = await User.countDocuments({ role: "business" });
   const coupons = await Coupon.countDocuments();
+  const redeemed_coupons = await DownloadedCoupon.countDocuments({
+    redeemed: true,
+  });
 
   const subscriptionData = await Payment.aggregate([
     {
@@ -104,6 +107,7 @@ const get_dashboard = async (req: Request, response: Response) => {
     coupons,
     subscription_growth,
     user_growth,
+    redeemed_coupons,
   };
   res.json({ message: "Dashboard data fetched successfully", data });
 };
