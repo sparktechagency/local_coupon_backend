@@ -237,7 +237,7 @@ const update_profile = async (
     }
     user.companyName = companyName || user.companyName;
     user.companyAddress = companyAddress || user.companyAddress;
-    user.socials = JSON.parse(socials) || user.socials;
+    user.socials = (socials && JSON.parse(socials)) || user.socials;
     user.countryDialCode = countryDialCode || user.countryDialCode;
     user.phone = phone || user.phone;
 
