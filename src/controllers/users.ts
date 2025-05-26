@@ -2,6 +2,10 @@ import { Request, Response } from "express";
 import { User } from "@db";
 import { isObjectIdOrHexString } from "mongoose";
 import createResponseHandler from "@utils/response_handler";
+import uploadService from "@services/uploadService";
+import { plainPasswordToHash } from "@utils/passwordHashing";
+import parseDate from "@utils/parseDate";
+import checkUserExists from "@utils/checkUserExists";
 
 const get_users = async (req: Request, response: Response): Promise<void> => {
   const res = createResponseHandler(response);
@@ -102,4 +106,129 @@ const toggle_ban = async (req: Request, response: Response) => {
   }
 };
 
-export { get_users, toggle_ban };
+const add_user = async (req: Request, response: Response) => {
+  const res = createResponseHandler(response);
+
+  const {
+    name,
+    email,
+    countryDialCode,
+    phone,
+    dateOfBirth,
+    gender,
+    location,
+    password,
+    role,
+    isSubscribed,
+    subscriptionExpiry,
+    companyName,
+    companyAddress,
+    hoursOfOperation,
+    socials,
+    free_downloads,
+    free_uploads,
+  } = req.body || {};
+
+  if (
+    !name ||
+    !email ||
+    !countryDialCode ||
+    !phone ||
+    !dateOfBirth ||
+    !gender ||
+    !location ||
+    !password ||
+    !role ||
+    !isSubscribed ||
+    ["user", "business"].indexOf(role) === -1 ||
+    ["true", "false"].indexOf(String(isSubscribed)) === -1 ||
+    ["male", "female", "other"].indexOf(gender) === -1
+  ) {
+    res.status(400).json({ message: "Invalid request" });
+    return;
+  }
+
+  const emailError = await checkUserExists("email", email);
+  if (emailError) {
+    res.status(400).json({ message: emailError });
+    return;
+  }
+
+  const phoneError = await checkUserExists("phone", phone);
+  if (phoneError) {
+    res.status(400).json({ message: phoneError });
+    return;
+  }
+
+  const picture =
+    req.files && (req.files as any)["picture"]
+      ? (req.files as any)["picture"]
+      : {};
+  const id_proof =
+    req.files && (req.files as any)["id_proof"]
+      ? (req.files as any)["id_proof"]
+      : {};
+  const verification_id =
+    req.files && (req.files as any)["verification_id"]
+      ? (req.files as any)["verification_id"]
+      : {};
+
+  if (!picture) {
+    res.status(400).json({ message: "Invalid request" });
+    return;
+  }
+
+  let picture_url;
+  let id_url;
+  let verification_url;
+
+  try {
+    picture_url = await uploadService(picture[0], "image");
+    id_url = await uploadService(id_proof[0], "image");
+    verification_url = await uploadService(verification_id[0], "image");
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error. Upload failed." });
+  }
+
+  const passwordHash = await plainPasswordToHash(password);
+
+  try {
+    await User.create({
+      name: name,
+      email: email,
+      emailVerified: true,
+      countryDialCode,
+      phone,
+      dateOfBirth: parseDate(dateOfBirth),
+      gender,
+      location,
+      passwordHash,
+      role,
+      isSubscribed,
+      subscriptionExpiry,
+      companyName,
+      companyAddress,
+      hoursOfOperation,
+      socials,
+      remaining_downloads: free_downloads,
+      remaining_uploads: free_uploads,
+      picture: picture_url,
+      id_url,
+      verification_url,
+    });
+
+    res.json({
+      message: "User added successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+const edit_user = async (req: Request, response: Response) => {};
+
+const delete_user = async (req: Request, response: Response) => {};
+
+export { get_users, toggle_ban, add_user, edit_user, delete_user };
