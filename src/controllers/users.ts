@@ -238,7 +238,6 @@ const edit_user = async (req: Request, response: Response) => {
     dateOfBirth,
     gender,
     location,
-    password,
     role,
     isSubscribed,
     subscriptionExpiry,
@@ -298,12 +297,6 @@ const edit_user = async (req: Request, response: Response) => {
     res.status(500).json({ message: "Internal Server Error. Upload failed." });
   }
 
-  let passwordHash;
-
-  if (password) {
-    passwordHash = await plainPasswordToHash(password);
-  }
-
   try {
     await User.findOneAndUpdate(
       { email },
@@ -314,7 +307,6 @@ const edit_user = async (req: Request, response: Response) => {
         ...(dateOfBirth && { dateOfBirth: parseDate(dateOfBirth) }),
         ...(gender && { gender }),
         ...(location && { location }),
-        ...(passwordHash && { passwordHash }),
         ...(role && { role }),
         ...(isSubscribed && { isSubscribed }),
         ...(subscriptionExpiry && { subscriptionExpiry }),
