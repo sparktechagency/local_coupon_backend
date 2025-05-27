@@ -7,7 +7,7 @@ import { isObjectIdOrHexString } from "mongoose";
 
 const get_categories = async (req: Request, response: Response) => {
   const res = createResponseHandler(response);
-  const { popular } = req.query;
+  const { popular, lang } = req.query;
 
   if (popular) {
     try {
@@ -26,7 +26,20 @@ const get_categories = async (req: Request, response: Response) => {
   }
 
   try {
-    const categories = await Categories.find({}, { __v: 0 });
+    const categoriesFromDB = await Categories.find({}, { __v: 0 });
+
+    const categories = categoriesFromDB.map((category) => {
+      const translation = category.translations.find(
+        (t: any) => t.language_code === lang
+      )?.name;
+
+      return {
+        id: category._id,
+        name: translation || category.name,
+        icon_url: category.icon_url,
+      };
+    });
+
     res.json({
       message: "Categories fetched successfully",
       data: categories,
