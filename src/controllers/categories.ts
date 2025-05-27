@@ -38,8 +38,18 @@ const get_categories = async (req: Request, response: Response) => {
 };
 
 const add_category = async (req: Request, res: Response) => {
-  const { name, translations } = req.body || {};
+  const { name, translations: rawTranslations } = req.body || {};
   const file = req.file;
+
+  let translations = [];
+
+  try {
+    translations = JSON.parse(rawTranslations || "[]");
+  } catch (err) {
+    return res
+      .status(400)
+      .json({ message: "Invalid JSON format for translations" });
+  }
 
   const error = validateRequiredFields({ name, file, translations });
   if (error) {
@@ -47,12 +57,7 @@ const add_category = async (req: Request, res: Response) => {
     return;
   }
 
-  if (!JSON.parse(translations || "[]").length) {
-    res.status(400).json({ message: "Translations are required" });
-    return;
-  }
-
-  const category = await Categories.findOne({ name, translations });
+  const category = await Categories.findOne({ name });
 
   if (category) {
     res.status(400).json({ message: "Category already exists" });
@@ -63,7 +68,7 @@ const add_category = async (req: Request, res: Response) => {
     const icon_url = await uploadService(file, "image");
 
     try {
-      await Categories.create({ name, icon_url });
+      await Categories.create({ name, icon_url, translations });
       res.status(200).json({ message: "Category added successfully" });
     } catch (error) {
       console.log(error);
