@@ -273,6 +273,18 @@ const Categories = new Schema({
     required: true,
     unique: true,
   },
+  translations: [
+    {
+      language_code: {
+        type: String,
+        required: true,
+      },
+      name: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
   icon_url: {
     type: String,
     required: true,

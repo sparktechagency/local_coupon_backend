@@ -38,21 +38,21 @@ const get_categories = async (req: Request, response: Response) => {
 };
 
 const add_category = async (req: Request, res: Response) => {
-  const { name } = req.body || {};
+  const { name, translations } = req.body || {};
   const file = req.file;
 
-  const error = validateRequiredFields({ name, file });
+  const error = validateRequiredFields({ name, file, translations });
   if (error) {
     res.status(400).json({ message: error });
     return;
   }
 
-  // if (file?.originalname?.split(".")[1] !== "svg") {
-  //   res.status(400).json({ message: "Icon should be .svg format" });
-  //   return;
-  // }
+  if (!JSON.parse(translations || "[]").length) {
+    res.status(400).json({ message: "Translations are required" });
+    return;
+  }
 
-  const category = await Categories.findOne({ name });
+  const category = await Categories.findOne({ name, translations });
 
   if (category) {
     res.status(400).json({ message: "Category already exists" });
