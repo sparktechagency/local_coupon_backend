@@ -46,9 +46,8 @@ const add_category = async (req: Request, res: Response) => {
   try {
     translations = JSON.parse(rawTranslations || "[]");
   } catch (err) {
-    return res
-      .status(400)
-      .json({ message: "Invalid JSON format for translations" });
+    res.status(400).json({ message: "Invalid JSON format for translations" });
+    return;
   }
 
   const error = validateRequiredFields({ name, file, translations });
