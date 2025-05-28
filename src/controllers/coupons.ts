@@ -35,7 +35,8 @@ const get_coupons = async (req: AuthenticatedRequest, response: Response) => {
         select: "name companyName",
       })
       .skip(skip)
-      .limit(limitNumber);
+      .limit(limitNumber)
+      .sort({ createdAt: -1 });
 
     res.json({
       message: "Coupons fetched successfully",
