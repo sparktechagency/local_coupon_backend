@@ -32,7 +32,7 @@ const get_users = async (req: Request, response: Response): Promise<void> => {
   const skip = (page - 1) * limit;
 
   const filters = {
-    role: type,
+    ...(!premium && { role: type }),
     ...(premium && {
       isSubscribed: true,
     }),
