@@ -226,7 +226,16 @@ const update_profile = async (
     });
     return;
   }
-  const picture = req.file;
+
+  let picture;
+  if (req.files && !Array.isArray(req.files) && typeof req.files === "object") {
+    picture = (req.files as { [fieldname: string]: any })["picture"];
+  }
+
+  let company_picture;
+  if (req.files && !Array.isArray(req.files) && typeof req.files === "object") {
+    picture = (req.files as { [fieldname: string]: any })["company_picture"];
+  }
 
   if (companyName || companyAddress || socials || hoursOfOperation) {
     user.companyName = companyName || user.companyName;
@@ -278,6 +287,15 @@ const update_profile = async (
       return;
     }
     user.picture = uploadedPicture;
+  }
+
+  if (company_picture) {
+    const uploadedPicture = await uploadService(company_picture, "image");
+    if (!uploadedPicture) {
+      res.status(400).json({ message: "Failed to upload picture" });
+      return;
+    }
+    user.company_picture = uploadedPicture;
   }
 
   await user.save();

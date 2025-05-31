@@ -20,7 +20,16 @@ router.get("/business-profile", get_business_profile);
 router.get("/last-visits", authorize(["user", "business"]), get_last_visits);
 router.put(
   "/",
-  upload.single("picture"),
+  upload.fields([
+    {
+      name: "picture",
+      maxCount: 1,
+    },
+    {
+      name: "company_picture",
+      maxCount: 1,
+    },
+  ]),
   authorize(["user", "business", "admin"]),
   update_profile
 );

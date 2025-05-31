@@ -10,6 +10,10 @@ const User = new Schema(
       type: String,
       default: null,
     },
+    company_picture: {
+      type: String,
+      default: null,
+    },
     email: {
       type: String,
       required: true,
