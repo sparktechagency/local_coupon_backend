@@ -119,6 +119,13 @@ const get_coupon = async (req: AuthenticatedRequest, response: Response) => {
 
 const add_coupon = async (req: AuthenticatedRequest, response: Response) => {
   const res = createResponseHandler(response);
+
+  const user = await User.findById(req.user?.id);
+  if (user?.remaining_uploads === 0 && user.isSubscribed === false) {
+    res.status(400).json({ message: "You have reached the limit of uploads" });
+    return;
+  }
+
   const {
     category_id,
     discount_percentage,
@@ -377,6 +384,14 @@ const download_coupon = async (
 ) => {
   const res = createResponseHandler(response);
   const user = await User.findById(req?.user?.id);
+
+  if (user?.remaining_downloads === 0 && user.isSubscribed === false) {
+    res.status(400).json({
+      message: "You have reached the maximum number of downloads",
+    });
+    return;
+  }
+
   const coupon = await Coupon.findById(req?.query?.id);
 
   if (!coupon) {
