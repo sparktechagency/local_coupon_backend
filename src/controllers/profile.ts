@@ -45,6 +45,7 @@ const get_profile = async (req: AuthenticatedRequest, response: Response) => {
     companyName,
     companyAddress,
     socials,
+    company_picture,
   } = user;
 
   const responsePayload: any = {
@@ -65,6 +66,7 @@ const get_profile = async (req: AuthenticatedRequest, response: Response) => {
     companyName,
     companyAddress,
     socials,
+    company_picture,
   };
 
   // if (role === "business") {
@@ -91,7 +93,7 @@ const get_business_profile = async (
     socials: 1,
     location: 1,
     hoursOfOperation: 1,
-    picture: 1,
+    company_picture: 1,
   });
 
   const filters = {
@@ -227,15 +229,11 @@ const update_profile = async (
     return;
   }
 
-  let picture;
-  if (req.files && !Array.isArray(req.files) && typeof req.files === "object") {
-    picture = (req.files as { [fieldname: string]: any })["picture"];
-  }
-
-  let company_picture;
-  if (req.files && !Array.isArray(req.files) && typeof req.files === "object") {
-    picture = (req.files as { [fieldname: string]: any })["company_picture"];
-  }
+  const { picture, company_picture } =
+    (req.files as {
+      picture?: Express.Multer.File[];
+      company_picture?: Express.Multer.File[];
+    }) || {};
 
   if (companyName || companyAddress || socials || hoursOfOperation) {
     user.companyName = companyName || user.companyName;

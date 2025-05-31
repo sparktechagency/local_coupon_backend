@@ -50,6 +50,23 @@ const get_categories = async (req: Request, response: Response) => {
   }
 };
 
+const get_all_categories = async (req: Request, response: Response) => {
+  const res = createResponseHandler(response);
+  try {
+    const categories = await Categories.find({}, { __v: 0 });
+    res.json({
+      message: "Categories fetched successfully",
+      data: categories.map((category) => ({
+        ...category.toObject(),
+        id: category._id,
+      })),
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 const add_category = async (req: Request, res: Response) => {
   const { name, translations: rawTranslations } = req.body || {};
   const file = req.file;
@@ -99,7 +116,7 @@ const add_category = async (req: Request, res: Response) => {
 };
 
 const update_category = async (req: Request, res: Response) => {
-  const { id, name } = req.body || {};
+  const { id, name, translations } = req.body || {};
   const file = req.file;
 
   const error = validateRequiredFields({ id });
@@ -112,6 +129,13 @@ const update_category = async (req: Request, res: Response) => {
   //   res.status(400).json({ message: "Icon should be .svg format" });
   //   return;
   // }
+
+  try {
+    JSON.parse(translations || []);
+  } catch (err) {
+    res.status(400).json({ message: "Invalid JSON format for translations" });
+    return;
+  }
 
   const category = await Categories.findOne({ _id: id });
 
@@ -127,6 +151,7 @@ const update_category = async (req: Request, res: Response) => {
       await category.updateOne({
         ...(name && { name }),
         ...(icon_url && { icon_url }),
+        ...(translations && { translations: JSON.parse(translations) }),
       });
       res.status(200).json({ message: "Category updated successfully" });
       return;
@@ -171,4 +196,10 @@ const delete_category = async (req: Request, res: Response) => {
   }
 };
 
-export { get_categories, add_category, update_category, delete_category };
+export {
+  get_categories,
+  get_all_categories,
+  add_category,
+  update_category,
+  delete_category,
+};

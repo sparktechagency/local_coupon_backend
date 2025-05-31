@@ -357,7 +357,7 @@ const delete_user = async (req: Request, response: Response) => {
 
 const get_user = async (req: Request, response: Response) => {
   const res = createResponseHandler(response);
-  const { id } = req.params;
+  const { id } = req.query;
 
   if (!id) {
     res.status(400).json({ message: "User ID is undefined" });
