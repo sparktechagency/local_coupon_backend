@@ -229,12 +229,6 @@ const update_profile = async (
   const picture = req.file;
 
   if (companyName || companyAddress || socials || hoursOfOperation) {
-    if (user.role !== "business") {
-      res
-        .status(403)
-        .json({ message: "Only business users can update company details" });
-      return;
-    }
     user.companyName = companyName || user.companyName;
     user.companyAddress = companyAddress || user.companyAddress;
     user.socials = (socials && JSON.parse(socials)) || user.socials;
