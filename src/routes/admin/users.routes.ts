@@ -2,6 +2,7 @@ import {
   add_user,
   delete_user,
   edit_user,
+  get_user,
   get_users,
   toggle_ban,
 } from "@controllers/users";
@@ -33,5 +34,6 @@ router.patch(
 );
 router.delete("/", delete_user);
 router.post("/toggle-ban", toggle_ban);
+router.get("/single", get_user);
 
 export default router;

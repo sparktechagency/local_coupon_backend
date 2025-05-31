@@ -355,4 +355,21 @@ const delete_user = async (req: Request, response: Response) => {
   }
 };
 
-export { get_users, toggle_ban, add_user, edit_user, delete_user };
+const get_user = async (req: Request, response: Response) => {
+  const res = createResponseHandler(response);
+  const { id } = req.params;
+
+  if (!id) {
+    res.status(400).json({ message: "User ID is undefined" });
+    return;
+  }
+
+  const user = await User.findById(id);
+  if (!user || user.isDeleted) {
+    res.status(404).json({ message: "User not found" });
+    return;
+  }
+  res.json({ data: user, message: "User found successfully" });
+};
+
+export { get_users, toggle_ban, add_user, edit_user, delete_user, get_user };
