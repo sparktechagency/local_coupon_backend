@@ -279,7 +279,7 @@ const update_profile = async (
   }
 
   if (picture) {
-    const uploadedPicture = await uploadService(picture, "image");
+    const uploadedPicture = await uploadService(picture[0], "image");
     if (!uploadedPicture) {
       res.status(400).json({ message: "Failed to upload picture" });
       return;
@@ -288,7 +288,7 @@ const update_profile = async (
   }
 
   if (company_picture) {
-    const uploadedPicture = await uploadService(company_picture, "image");
+    const uploadedPicture = await uploadService(company_picture[0], "image");
     if (!uploadedPicture) {
       res.status(400).json({ message: "Failed to upload picture" });
       return;
