@@ -205,7 +205,7 @@ const add_user = async (req: Request, response: Response) => {
       location,
       passwordHash,
       role,
-      isSubscribed,
+      isSubscribed: isSubscribed === "true" ? true : false,
       subscriptionExpiry,
       companyName,
       companyAddress,
