@@ -9,7 +9,7 @@ const get_dashboard = async (req: Request, response: Response) => {
   const subscriptionYear = subscription_year || new Date().getFullYear();
   const userYear = user_year || new Date().getFullYear();
 
-  const total_users = await User.countDocuments();
+  const total_users = await User.countDocuments({ role: "user" });
   const premium_users = await User.countDocuments({ isSubscribed: true });
   const business_owners = await User.countDocuments({ role: "business" });
   const coupons = await Coupon.countDocuments();
