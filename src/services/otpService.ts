@@ -13,7 +13,7 @@ const sendOTP = async (
   await OTP.create({ otp: `${email}:${otp}`, type });
   const subject = "OTP for verification";
   const text = `Your OTP is ${otp}`;
-  await sendEmail({ to: email, subject, text });
+  // await sendEmail({ to: email, subject, text });
   return otp;
 };
 
