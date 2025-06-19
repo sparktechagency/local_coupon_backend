@@ -31,8 +31,8 @@ const get_coupons = async (req: AuthenticatedRequest, response: Response) => {
       add_to_carousel: 0,
     })
       .populate({
-        path: "createdBy",
-        select: "name companyName",
+        path: "category",
+        select: "name",
       })
       .skip(skip)
       .limit(limitNumber)

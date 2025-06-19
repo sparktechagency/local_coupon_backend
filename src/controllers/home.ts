@@ -2,7 +2,6 @@ import { AccessTokenPayload } from "@utils/jwt";
 import { Request, Response } from "express";
 import { Categories, Coupon, DownloadedCoupon, User, Visit } from "@db";
 import createResponseHandler from "@utils/response_handler";
-import { Types } from "mongoose";
 
 interface AuthenticatedRequest extends Request {
   user?: AccessTokenPayload;
@@ -24,8 +23,12 @@ const home = async (req: AuthenticatedRequest, response: Response) => {
   let creatorIds = [];
   if (query) {
     const creators = await User.find(
-      { companyName: new RegExp(query as string, "i") },
-      { location: new RegExp(location as string, "i") },
+      {
+        $or: [
+          { companyName: new RegExp(query as string, "i") },
+          { location: new RegExp(location as string, "i") },
+        ],
+      },
       { _id: 1 }
     );
     creatorIds = creators.map((creator: any) => creator._id);

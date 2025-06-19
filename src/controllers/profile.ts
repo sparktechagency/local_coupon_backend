@@ -94,6 +94,7 @@ const get_business_profile = async (
     location: 1,
     hoursOfOperation: 1,
     company_picture: 1,
+    phone: 1,
   });
 
   const filters = {

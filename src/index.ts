@@ -23,11 +23,15 @@ app.use(express.json({ limit: "20mb" }));
 app.use(logger);
 registerUserRoutes(app);
 registerAdminRoutes(app);
+
+app.get('/health', (_req, res)=>{
+  res.json({message: "Server health is good :("})
+})
 // server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-server.setTimeout(60000); // 1 minute
+server.setTimeout(60000);
 
 startDB();

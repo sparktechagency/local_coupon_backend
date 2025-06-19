@@ -112,7 +112,7 @@ const signup = async (req: Request, response: Response) => {
 
   triggerNotification("SIGNUP", { email });
 
-  res.status(200).json({ message: "OTP sent to email", data: { otp } });
+  res.status(200).json({ message: "OTP sent to email" });
 };
 
 const verify_otp = async (req: Request, response: Response) => {
@@ -491,7 +491,7 @@ const resend_otp = async (req: Request, response: Response) => {
 
   const otp = await sendOTP(email, type);
 
-  res.status(200).json({ message: "OTP resent successfully", data: { otp } });
+  res.status(200).json({ message: "OTP resent successfully" });
 };
 
 export {

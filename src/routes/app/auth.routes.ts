@@ -34,6 +34,7 @@ router.post(
   ]),
   signup
 );
+
 router.post("/verify-otp", verify_otp);
 router.post("/forgot-password", forgot_password);
 router.post("/reset-password", reset_password);
