@@ -37,12 +37,12 @@ jobs:
 
       - name: Deploy to DigitalOcean
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << EOF
-            cd /root/imato
-            git reset --hard
-            git pull origin main
-            source ~/.bashrc
-            npm ci
-            npm run build
-            pm2 restart all
-          EOF
+            ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << EOF
+              source /root/.nvm/nvm.sh
+              cd /root/imato
+              git pull origin main
+              npm ci
+              npm run build
+              pm2 restart all
+            EOF
+
