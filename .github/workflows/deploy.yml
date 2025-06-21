@@ -39,7 +39,9 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << EOF
             cd /root/imato
+            git reset --hard
             git pull origin main
+            source ~/.bashrc
             npm ci
             npm run build
             pm2 restart all
