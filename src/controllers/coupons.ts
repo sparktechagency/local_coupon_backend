@@ -30,10 +30,7 @@ const get_coupons = async (req: AuthenticatedRequest, response: Response) => {
       __v: 0,
       add_to_carousel: 0,
     })
-      .populate({
-        path: "category",
-        select: "name",
-      })
+      .populate("createdBy")
       .skip(skip)
       .limit(limitNumber)
       .sort({ createdAt: -1 });
