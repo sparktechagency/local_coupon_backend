@@ -10,28 +10,28 @@ interface EmailOptions {
   html?: string;
 }
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_FOR_NODEMAILER,
-    pass: process.env.PASSWORD_FOR_NODEMAILER,
-  },
-});
-
 export const sendEmail = async ({ to, subject, text, html }: EmailOptions) => {
   try {
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to,
-      subject,
-      text,
-      html,
+    // Create a transporter for sending emails
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_FOR_NODEMAILER,
+        pass: process.env.PASSWORD_FOR_NODEMAILER,
+      },
     });
 
-    console.log(`Email sent: ${info.messageId}`);
-    return { success: true, messageId: info.messageId };
+    // Email options: from, to, subject, and HTML body
+    const mailOptions = {
+      from: process.env.EMAIL_FOR_NODEMAILER,
+      to,
+      subject,
+      html,
+    };
+
+    // Send the email using Nodemailer
+    await transporter.sendMail(mailOptions);
   } catch (error) {
-    console.error("Error sending email:", error);
-    return { success: false, error };
+    console.log(error);
   }
 };
