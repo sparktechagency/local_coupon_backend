@@ -9,9 +9,20 @@ interface AuthenticatedRequest extends Request {
 const home = async (req: AuthenticatedRequest, response: Response) => {
   const res = createResponseHandler(response);
   const { query, category, location, page, limit } = req.query || {};
+
   let categories;
   if (!category) {
     categories = await Categories.find({}, { __v: 0 });
+  }
+
+  const couponFilter: any = {};
+
+  if (category) {
+    const isExistCategory = await Categories.findById(category);
+    if (!isExistCategory) {
+      throw new Error("Category not exists!");
+    }
+    couponFilter.category = isExistCategory._id;
   }
 
   const userCoordinates = await User.findById(req?.user?.id, {
@@ -45,7 +56,7 @@ const home = async (req: AuthenticatedRequest, response: Response) => {
   const totalCoupons = await Coupon.countDocuments(filters);
   const totalPages = Math.ceil(totalCoupons / limitNumber);
 
-  const couponsFromDB = await Coupon.find(filters)
+  const couponsFromDB = await Coupon.find(couponFilter)
     .populate({
       path: "createdBy",
       select: "name companyName location coordinates",
@@ -84,15 +95,15 @@ const home = async (req: AuthenticatedRequest, response: Response) => {
     .sort(() => Math.random() - 0.5)
     .slice(0, 20);
 
-  const coupons = couponsWithDistance.filter(
-    (coupon) => !coupon.add_to_carousel
-  );
+  // const coupons = couponsWithDistance.filter(
+  //   (coupon) => !coupon.add_to_carousel
+  // );
 
   res.json({
     data: {
       ...(!query && { categories }),
       ...(!query && { carousel }),
-      coupons,
+      coupons: couponsFromDB,
     },
     message: "Home fetched successfully",
     meta: {

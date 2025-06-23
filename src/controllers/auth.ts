@@ -475,7 +475,9 @@ const switch_account = async (
     req.user.role === "business" ? "user" : "business"
   );
   res.json({
-    data: { token: accessToken },
+    data: {
+      token: accessToken,
+    },
     message: "Account switched successfully",
   });
 };

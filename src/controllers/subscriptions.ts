@@ -29,6 +29,7 @@ const add_subscription = async (req: Request, response: Response) => {
     res.status(400).json({ message: `${name} plan already exists` });
     return;
   }
+
   await Subscription.create({
     name,
     priceInCents,
