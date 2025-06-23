@@ -17,6 +17,7 @@ const home = async (req: AuthenticatedRequest, response: Response) => {
 
   const couponFilter: any = {};
 
+  // If pass category id from frontend then run this function
   if (category) {
     const isExistCategory = await Categories.findById(category);
     if (!isExistCategory) {
