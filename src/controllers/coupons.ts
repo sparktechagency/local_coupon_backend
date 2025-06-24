@@ -700,6 +700,23 @@ const analytics = async (req: AuthenticatedRequest, response: Response) => {
   });
 };
 
+const get_tour_coupons = async (_req: Request, res: Response) => {
+  const category = await Categories.findOne({
+    name: { $regex: /tour?/i },
+  });
+
+  if (!category) {
+    throw new Error("Tour category not exists");
+  }
+
+  const coupons = await Coupon.find({ category: category?._id });
+
+  res.status(200).json({
+    message: "Coupon fetched successfully",
+    data: coupons,
+  });
+};
+
 export {
   get_coupons,
   add_coupon,
@@ -711,4 +728,5 @@ export {
   share_coupon,
   analytics,
   get_coupon,
+  get_tour_coupons,
 };

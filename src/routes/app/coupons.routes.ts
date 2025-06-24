@@ -6,6 +6,7 @@ import {
   get_coupon,
   get_coupons,
   get_qr_code,
+  get_tour_coupons,
   redeem_coupon,
   share_coupon,
   update_coupon,
@@ -47,5 +48,6 @@ router.get("/qr-code", authorize(["user"]), get_qr_code);
 router.get("/redeem-coupon", redeem_coupon);
 router.post("/share-coupon", share_coupon);
 router.get("/analytics", authorize(["business"]), analytics);
+router.get("/tours-coupon", get_tour_coupons);
 
 export default router;
