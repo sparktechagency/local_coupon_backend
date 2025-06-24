@@ -101,9 +101,11 @@ const get_coupon = async (req: AuthenticatedRequest, response: Response) => {
     return;
   }
 
-  const coupon = await Coupon.findById(id, {
-    __v: 0,
-  });
+  const coupon = await Coupon.findByIdAndUpdate(
+    id,
+    { $inc: { exploreCount: 1 } },
+    { new: true }
+  );
 
   if (!coupon) {
     res.status(404).json({ message: "Coupon with this ID doesn't exist" });
@@ -117,6 +119,8 @@ const get_coupon = async (req: AuthenticatedRequest, response: Response) => {
       const decoded = verifyAccessToken(cleanToken);
       if (decoded?.id) {
         const user = await User.findById(decoded.id);
+
+        console.log("from token service: ", user);
 
         if (user && !user.last_visited.includes(coupon.id)) {
           // Insert couponId at the beginning of the last_visited array
@@ -417,7 +421,11 @@ const download_coupon = async (
     return;
   }
 
-  const coupon = await Coupon.findById(req?.query?.id);
+  const coupon = await Coupon.findByIdAndUpdate(
+    req?.query?.id,
+    { $inc: { downloadCount: 1 } },
+    { new: true }
+  );
 
   if (!coupon) {
     res.status(404).json({ message: "Coupon with this ID doesn't exist" });
@@ -445,7 +453,6 @@ const download_coupon = async (
     await Visit.create({ visitor: user?._id, coupon: coupon._id });
     res.json({ message: "Coupon downloaded successfully" });
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       message: "Internal Server Error",
     });
@@ -631,18 +638,20 @@ const share_coupon = async (req: Request, response: Response) => {
     return;
   }
 
-  const coupon = await Coupon.findById(couponId);
+  const coupon = await Coupon.findByIdAndUpdate(
+    couponId,
+    { $inc: { shareCount: 1 } },
+    { new: true }
+  );
 
   if (!coupon) {
     res.status(404).json({ message: "Coupon not found" });
     return;
   }
 
-  coupon.shareCount += 1;
-  await coupon.save();
   res.json({
     message: "Coupon shared successfully",
-    data: { business_id: coupon.createdBy._id },
+    data: { business_id: coupon.createdBy._id, coupon: coupon._id },
   });
 };
 

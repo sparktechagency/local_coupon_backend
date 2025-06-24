@@ -2,6 +2,7 @@ import { AccessTokenPayload } from "@utils/jwt";
 import { Request, Response } from "express";
 import { Categories, Coupon, DownloadedCoupon, User, Visit } from "@db";
 import createResponseHandler from "@utils/response_handler";
+import mongoose from "mongoose";
 
 interface AuthenticatedRequest extends Request {
   user?: AccessTokenPayload;
@@ -160,34 +161,49 @@ const calcDistance = (
 const analytics = async (req: AuthenticatedRequest, response: Response) => {
   const res = createResponseHandler(response);
   const coupons = await Coupon.find({ createdBy: req.user?.id });
-  const total_downloads = await DownloadedCoupon.countDocuments({
-    coupon: { $in: coupons.map((c) => c._id) },
-  });
-  const total_shares = coupons.reduce(
-    (sum, coupon) => sum + (coupon.shareCount || 0),
-    0
-  );
-  const click_to_explore = await Visit.countDocuments({
-    coupon: { $in: coupons.map((c) => c._id) },
-  });
-  const expired_coupons = await Coupon.countDocuments({
-    createdBy: req.user?.id,
-    end: { $lt: new Date() },
-  });
+  const data = await Coupon.aggregate([
+    {
+      $match: {
+        _id: { $in: coupons.map((c) => c._id) },
+        createdBy: new mongoose.Types.ObjectId(req.user?.id),
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalDownloads: { $sum: "$downloadCount" },
+        total_shares: { $sum: "$shareCount" },
+        click_to_explore: { $sum: "$exploreCount" },
+        totalDiscountAmount: { $sum: "$discount_amount" },
+        expired_coupons: {
+          $sum: { $cond: [{ $lt: ["$end", new Date()] }, 1, 0] },
+        },
+      },
+    },
+  ]);
+  // const total_shares = coupons.reduce(
+  //   (sum, coupon) => sum + (coupon.shareCount || 0),
+  //   0
+  // );
+  // const click_to_explore = await Visit.countDocuments({
+  //   coupon: { $in: coupons.map((c) => c._id) },
+  // });
+  // const expired_coupons = await Coupon.countDocuments({
+  //   createdBy: req.user?.id,
+  //   end: { $lt: new Date() },
+  // });
+  // const value = coupons.reduce(
+  //   (sum, coupon) => sum + (coupon.discount_amount || 0),
+  //   0
+  // );
   const profile_visits = await Visit.countDocuments({ business: req.user?.id });
-  const value = coupons.reduce(
-    (sum, coupon) => sum + (coupon.discount_amount || 0),
-    0
-  );
+
+  console.log(data);
 
   res.json({
     data: {
-      total_downloads,
-      total_shares,
-      click_to_explore,
-      expired_coupons,
+      ...data[0],
       profile_visits,
-      value,
     },
     message: "Analytics fetched successfully",
   });

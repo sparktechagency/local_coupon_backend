@@ -14,7 +14,11 @@ interface AuthenticatedRequest extends Request {
 
 const get_profile = async (req: AuthenticatedRequest, response: Response) => {
   const res = createResponseHandler(response);
-  const user = await User.findById(req.user?.id);
+  const user = await User.findById(req.user?.id)
+    .select(
+      "email name picture role providers dateOfBirth gender location countryDialCode phone isSubscribed remaining_downloads remaining_uploads companyName companyAddress socials company_picture last_visited"
+    )
+    .populate({ path: "last_visited", populate: "category" });
   if (!user || user.isDeleted) {
     res.status(404).json({ message: "User not found" });
     return;
@@ -27,58 +31,9 @@ const get_profile = async (req: AuthenticatedRequest, response: Response) => {
     return;
   }
 
-  const {
-    _id,
-    email,
-    name,
-    picture,
-    role,
-    providers,
-    dateOfBirth,
-    gender,
-    location,
-    countryDialCode,
-    phone,
-    isSubscribed,
-    remaining_downloads,
-    remaining_uploads,
-    companyName,
-    companyAddress,
-    socials,
-    company_picture,
-  } = user;
-
-  const responsePayload: any = {
-    _id,
-    email,
-    name,
-    picture,
-    role,
-    providers,
-    dateOfBirth,
-    gender,
-    location,
-    countryDialCode: countryDialCode || "+1",
-    phone,
-    isSubscribed,
-    remaining_downloads,
-    remaining_uploads,
-    companyName,
-    companyAddress,
-    socials,
-    company_picture,
-  };
-
-  // if (role === "business") {
-  //   responsePayload.companyName = user.companyName;
-  //   responsePayload.companyAddress = user.companyAddress;
-  //   responsePayload.socials = user.socials;
-  //   responsePayload.hoursOfOperation = user.hoursOfOperation;
-  // }
-
   res
     .status(200)
-    .json({ data: responsePayload, message: "Profile retrieved successfully" });
+    .json({ data: user, message: "Profile retrieved successfully" });
 };
 
 const get_business_profile = async (
