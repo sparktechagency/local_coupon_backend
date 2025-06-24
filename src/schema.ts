@@ -1,4 +1,4 @@
-import { Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 const User = new Schema(
   {
@@ -146,6 +146,11 @@ const User = new Schema(
     remaining_uploads: {
       type: Number,
       default: 3,
+    },
+    last_visited: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "Coupon",
+      default: [],
     },
   },
   { timestamps: true }

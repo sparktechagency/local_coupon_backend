@@ -1,5 +1,5 @@
 import uploadService from "@services/uploadService";
-import { AccessTokenPayload } from "@utils/jwt";
+import { AccessTokenPayload, verifyAccessToken } from "@utils/jwt";
 import validateCoupon from "@utils/validateCoupon";
 import validateRequiredFields from "@utils/validateFields";
 import { Request, Response } from "express";
@@ -87,6 +87,8 @@ const get_coupons = async (req: AuthenticatedRequest, response: Response) => {
 };
 
 const get_coupon = async (req: AuthenticatedRequest, response: Response) => {
+  const token = req.headers?.authorization;
+
   const { id } = req.query || {};
   const res = createResponseHandler(response);
   const error = validateRequiredFields({ id });
@@ -106,6 +108,32 @@ const get_coupon = async (req: AuthenticatedRequest, response: Response) => {
   if (!coupon) {
     res.status(404).json({ message: "Coupon with this ID doesn't exist" });
     return;
+  }
+
+  if (token) {
+    const cleanToken = token.split(" ")[1];
+
+    try {
+      const decoded = verifyAccessToken(cleanToken);
+      if (decoded?.id) {
+        const user = await User.findById(decoded.id);
+
+        if (user && !user.last_visited.includes(coupon.id)) {
+          // Insert couponId at the beginning of the last_visited array
+          user.last_visited.unshift(coupon.id); // Adds couponId at the start of the array
+
+          // If array length exceeds 5, remove the last element
+          if (user.last_visited.length > 5) {
+            user.last_visited.pop(); // Removes the last element if the array exceeds 5
+          }
+
+          // Save the updated user document
+          await user.save();
+        }
+      }
+    } catch {
+      console.log("Token verify error");
+    }
   }
 
   res.json({
