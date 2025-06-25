@@ -414,6 +414,11 @@ const download_coupon = async (
   const res = createResponseHandler(response);
   const user = await User.findById(req?.user?.id);
 
+  if (!user) {
+    res.status(404).json({ message: "User doesn't exist" });
+    return;
+  }
+
   if (user?.remaining_downloads === 0 && user.isSubscribed === false) {
     res.status(400).json({
       message: "You have reached the maximum number of downloads",

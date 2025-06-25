@@ -43,7 +43,7 @@ router.patch(
 );
 router.delete("/", authorize(["user", "business"]), delete_coupon);
 
-router.get("/download", download_coupon);
+router.get("/download", authorize(["user", "business"]), download_coupon);
 router.get("/qr-code", authorize(["user"]), get_qr_code);
 router.get("/redeem-coupon", redeem_coupon);
 router.post("/share-coupon", share_coupon);
