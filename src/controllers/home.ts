@@ -181,21 +181,7 @@ const analytics = async (req: AuthenticatedRequest, response: Response) => {
       },
     },
   ]);
-  // const total_shares = coupons.reduce(
-  //   (sum, coupon) => sum + (coupon.shareCount || 0),
-  //   0
-  // );
-  // const click_to_explore = await Visit.countDocuments({
-  //   coupon: { $in: coupons.map((c) => c._id) },
-  // });
-  // const expired_coupons = await Coupon.countDocuments({
-  //   createdBy: req.user?.id,
-  //   end: { $lt: new Date() },
-  // });
-  // const value = coupons.reduce(
-  //   (sum, coupon) => sum + (coupon.discount_amount || 0),
-  //   0
-  // );
+
   const profile_visits = await Visit.countDocuments({ business: req.user?.id });
 
   console.log(data);
