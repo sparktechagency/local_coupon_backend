@@ -196,10 +196,52 @@ const delete_category = async (req: Request, res: Response) => {
   }
 };
 
+const get_popular_categories = async (req: Request, res: Response) => {
+  try {
+    const popularCategories = await Coupon.aggregate([
+      {
+        $lookup: {
+          from: "categories",
+          localField: "category",
+          foreignField: "_id",
+          as: "category_info",
+        },
+      },
+      {
+        $unwind: "$category_info",
+      },
+      {
+        $group: {
+          _id: "$category_info._id",
+          categoryName: { $first: "$category_info.name" },
+          icon_url: { $first: "$category_info.icon_url" },
+          downloadCount: { $sum: "$downloadCount" },
+          shareCount: { $sum: "$shareCount" },
+        },
+      },
+      {
+        $sort: {
+          downloadCount: -1,
+          shareCount: -1,
+        },
+      },
+      {
+        $limit: 8,
+      },
+    ]);
+
+    res.status(200).json({ popularCategories });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to fetch popular categories" });
+  }
+};
+
 export {
   get_categories,
   get_all_categories,
   add_category,
   update_category,
   delete_category,
+  get_popular_categories,
 };
