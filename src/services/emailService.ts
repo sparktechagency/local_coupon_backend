@@ -1,7 +1,15 @@
+import Mailgun from "mailgun.js";
+import formData from "form-data";
 import { config } from "dotenv";
-import nodemailer from "nodemailer";
 
 config();
+
+const mailgun = new Mailgun(formData);
+
+const mg = mailgun.client({
+  username: "api",
+  key: process.env.MAIL_GUN_KEY!,
+});
 
 interface EmailOptions {
   to: string;
@@ -12,26 +20,15 @@ interface EmailOptions {
 
 export const sendEmail = async ({ to, subject, text, html }: EmailOptions) => {
   try {
-    // Create a transporter for sending emails
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_FOR_NODEMAILER,
-        pass: process.env.PASSWORD_FOR_NODEMAILER,
-      },
-    });
-
-    // Email options: from, to, subject, and HTML body
-    const mailOptions = {
-      from: process.env.EMAIL_FOR_NODEMAILER,
+    const response = await mg.messages.create(process.env.MAIL_GUN_DOMAIN!, {
+      from: "Verification Mail <noreply@mg.impactoapps.com>",
       to,
       subject,
+      text,
       html,
-    };
-
-    // Send the email using Nodemailer
-    await transporter.sendMail(mailOptions);
+    } as any); 
+    console.log("Mail sent:", response);
   } catch (error) {
-    console.log(error);
+    console.error("Mail sending error:", error);
   }
 };
