@@ -496,6 +496,39 @@ const resend_otp = async (req: Request, response: Response) => {
   res.status(200).json({ message: "OTP resent successfully" });
 };
 
+const subscriptionsFeature = async (req: AuthenticatedRequest, response: any) => {
+  const res = createResponseHandler(response);
+  console.log("User ID:", req.user?.id);
+
+  const userDb = await User.findById(req.user?.id);
+
+  if (!userDb) {
+    res.status(400).json({ message: "User not found" });
+    return;
+  }
+
+  const SUBSCRIPTIONS_FEATURE = process.env.SUBSCRIPTIONS_FEATURE?.toUpperCase() || "TEST";
+  const DEFAULT_USER = process.env.DEFAULT_USER || "";
+
+  let result = false;
+
+  if (SUBSCRIPTIONS_FEATURE === "LIVE") {
+    if (userDb.email === DEFAULT_USER) {
+      console.log("Matched DEFAULT_USER, no subscription features.", false);
+      result = false;
+    } else {
+      console.log("LIVE feature enabled for user.", true);
+      result = true;
+    }
+  } else {
+    console.log("Feature not in LIVE mode.", false);
+    result = false;
+  }
+  // @ts-ignore
+  res.status(200).json({ result });
+};
+
+
 export {
   signup,
   verify_otp,
@@ -508,4 +541,5 @@ export {
   apple_login,
   switch_account,
   resend_otp,
+  subscriptionsFeature
 };
