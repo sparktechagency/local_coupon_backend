@@ -1,14 +1,15 @@
-import Mailgun from "mailgun.js";
-import formData from "form-data";
+import nodemailer from "nodemailer";
 import { config } from "dotenv";
-
 config();
 
-const mailgun = new Mailgun(formData);
-
-const mg = mailgun.client({
-  username: "api",
-  key: process.env.MAIL_GUN_KEY!,
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT),
+  secure: true, // true for 465, false for 587
+  auth: {
+    user: process.env.SMTP_MAIL,
+    pass: process.env.SMTP_PASSWORD,
+  },
 });
 
 interface EmailOptions {
@@ -20,15 +21,16 @@ interface EmailOptions {
 
 export const sendEmail = async ({ to, subject, text, html }: EmailOptions) => {
   try {
-    const response = await mg.messages.create(process.env.MAIL_GUN_DOMAIN!, {
-      from: "Verification Mail <noreply@mg.impactoapps.com>",
+    const info = await transporter.sendMail({
+      from: `"Verification Mail" <${process.env.SMTP_MAIL}>`,
       to,
       subject,
       text,
       html,
-    } as any); 
-    console.log("Mail sent:", response);
+    });
+
+    console.log("Email sent: %s", info.messageId);
   } catch (error) {
-    console.error("Mail sending error:", error);
+    console.error("SMTP Email sending failed:", error);
   }
 };

@@ -41,10 +41,10 @@ const signup = async (req: Request, response: Response) => {
     return;
   }
 
-  if (role !== "user" && role !== "business") {
-    res.status(400).json({ message: "Invalid role" });
-    return;
-  }
+  // if (role !== "user" && role !== "business") {
+  //   res.status(400).json({ message: "Invalid role" });
+  //   return;
+  // }
 
   const error = validateRequiredFields({ name, email, phone, password });
   if (error) {
