@@ -37,7 +37,6 @@ router.post(
   ]),
   signup
 );
-
 router.post("/verify-otp", verify_otp);
 router.get("/subscriptions_feature", authorize(["business", "user"]), subscriptionsFeature);
 router.post("/forgot-password", forgot_password);
