@@ -45,7 +45,7 @@ const create_payment = async (req: CreatePaymentRequest, res: Response) => {
           product_data: {
             name: selectedPackage.name,
           },
-          unit_amount: selectedPackage.priceInCents,
+          unit_amount: Math.round(selectedPackage.priceInCents * 100),
           recurring: {
             interval: "month",
             interval_count: selectedPackage.durationInMonths,
