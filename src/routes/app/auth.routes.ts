@@ -11,7 +11,9 @@ import {
   apple_login,
   switch_account,
   resend_otp,
+  subscriptionsFeature
 } from "@controllers/auth";
+
 
 import authorize from "@middleware/auth";
 import multer from "multer";
@@ -37,6 +39,7 @@ router.post(
 );
 
 router.post("/verify-otp", verify_otp);
+router.get("/subscriptions_feature", authorize(["business", "user"]), subscriptionsFeature);
 router.post("/forgot-password", forgot_password);
 router.post("/reset-password", reset_password);
 router.post("/login", login);
