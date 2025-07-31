@@ -12,6 +12,7 @@ import {
   switch_account,
   resend_otp,
 } from "@controllers/auth";
+
 import authorize from "@middleware/auth";
 import multer from "multer";
 
