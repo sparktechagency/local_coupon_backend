@@ -14,7 +14,6 @@ import {
   subscriptionsFeature
 } from "@controllers/auth";
 
-
 import authorize from "@middleware/auth";
 import multer from "multer";
 
@@ -37,6 +36,7 @@ router.post(
   ]),
   signup
 );
+
 router.post("/verify-otp", verify_otp);
 router.get("/subscriptions_feature", authorize(["business", "user"]), subscriptionsFeature);
 router.post("/forgot-password", forgot_password);
