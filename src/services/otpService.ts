@@ -4,11 +4,10 @@ import { OTP } from "@db"; // Adjust this path based on your project structure
 
 dotenv.config();
 
-// Set API Key
+
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || "");
 console.log("🔧 OTP Service Initialized", process.env.SENDGRID_API_KEY);
 
-// Email Sender
 const sendEmail = async ({
   to,
   subject,
@@ -53,7 +52,6 @@ const sendEmail = async ({
   }
 };
 
-// OTP Generator
 const generateOtp = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
@@ -74,7 +72,7 @@ const sendOTP = async (
   return otp;
 };
 
-// Verify OTP
+
 const verifyOTP = async (email: string, otp: string) => {
   const otpDoc = await OTP.findOne({ otp: `${email}:${otp}` });
 
