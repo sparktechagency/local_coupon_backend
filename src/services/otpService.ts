@@ -6,7 +6,7 @@ dotenv.config();
 
 // Set API Key
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || "");
-console.log("🔧 OTP Service Initialized");
+console.log("🔧 OTP Service Initialized", process.env.SENDGRID_API_KEY);
 
 // Email Sender
 const sendEmail = async ({
