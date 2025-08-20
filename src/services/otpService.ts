@@ -23,7 +23,7 @@ const sendEmail = async ({
     to,
     from: {
       email: process.env.SENDGRID_EMAIL || "",
-      name: "Local Coupon",
+      name: "Impacto App",
     },
     subject,
     text,
@@ -35,7 +35,7 @@ const sendEmail = async ({
         <p style="font-size: 18px;">${text}</p>
         <br/>
         <p style="font-size: 14px;">If you did not request this, please ignore this email.</p>
-        <p style="font-size: 14px;">– Local Coupon Team</p>
+        <p style="font-size: 14px;">– Impacto App Team</p>
       </div>
     `,
   };

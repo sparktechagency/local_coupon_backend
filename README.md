@@ -1,10 +1,13 @@
 ## Impacto
+
 Impacto is a local coupon app that allows users to find and redeem coupons from local businesses and allows businesses to offer coupons to their customers.
 
 ## Tech Stack
+
 Backend: Node.js, Express, MongoDB
 
 ## Features
+
 - Authentication
 - User and Business Owner Subscriptions
 - Coupon Management
@@ -14,14 +17,15 @@ Backend: Node.js, Express, MongoDB
 - Business Coupon Management
 
 ## Admin Features
+
 - Admin Dashboard
 - Admin User and Business Management
 - Subscription Management
 - Coupon Category Management
 - Helpdesk Management
 
-
 ## Roadmap
+
 - [business profile] home page analytics
 - qr code scan analytics
 - notification system
@@ -30,10 +34,10 @@ Backend: Node.js, Express, MongoDB
 - home page - search, categories, carousel, recommended coupons
 - coupon filters - category & location filters
 
-
 ### API Endpoints
 
 ## Auth
+
 - ✅ login
 - ✅ google-login
 - ✅ apple-login
@@ -46,21 +50,24 @@ Backend: Node.js, Express, MongoDB
 - ✅ switch-account
 
 ## Stripe
+
 - ✅ create-payment
 
 ## Home/Explore
+
 - ✅ [GET] home?query&category&location
-    - Response: 
-    ```
-    {
-        categories: [],
-        carousel: [],
-        coupons: []
-    }
-    ```
+  - Response:
+  ```
+  {
+      categories: [],
+      carousel: [],
+      coupons: []
+  }
+  ```
 - ✅ business-analytics
 
 ## Coupons
+
 - ✅ get-coupons
 - ✅ delete-coupon
 - ✅ download-coupon
@@ -72,6 +79,7 @@ Backend: Node.js, Express, MongoDB
 - ✅ coupon-analytics
 
 ## Profile
+
 - ✅ get-profile
 - ✅ get-business-profile
 - ✅ last-visit
@@ -80,20 +88,25 @@ Backend: Node.js, Express, MongoDB
 - ✅ change-password
 
 ## Legal
+
 - ✅ faqs
 - ✅ terms
 - ✅ privacy
 
 ## Contact Us
+
 - ✅ contact-us
 
 ## Referral System
+
 - ✅ invite-friends
 
 ## Notification System
+
 - ws
 
 ## Admin Panel
+
 - dashboard
 - ✅ recent-transactions
 - ✅ business-owners
@@ -111,5 +124,3 @@ Backend: Node.js, Express, MongoDB
 - ✅ update-faqs
 - ✅ update-terms
 - ✅ update-privacy
-
-
