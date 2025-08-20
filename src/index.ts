@@ -24,8 +24,8 @@ app.use(logger);
 registerUserRoutes(app);
 registerAdminRoutes(app);
 
-app.get('/health', (_req, res)=>{
-  res.json({message: "Server health is good :("})
+app.get('/health', (_req, res) => {
+  res.json({ message: "Server health is good :(" })
 })
 // server
 const PORT = process.env.PORT || 3000;
@@ -35,3 +35,6 @@ server.listen(PORT, () => {
 server.setTimeout(60000);
 
 startDB();
+
+
+// 
