@@ -124,3 +124,6 @@ Backend: Node.js, Express, MongoDB
 - ✅ update-faqs
 - ✅ update-terms
 - ✅ update-privacy
+
+
+<!-- Security scan triggered at 2025-09-02 04:17:13 -->
