@@ -65,6 +65,50 @@ const User = new Schema(
       type: String,
       default: null,
     },
+    businessName: {
+      type: String,
+      default: null,
+    },
+    businessPhone: {
+      type: String,
+      default: null,
+    },
+    street: {
+      type: String,
+      default: null,
+    },
+    exteriorNumber: {
+      type: String,
+      default: null,
+    },
+    interiorNumber: {
+      type: String,
+      default: null,
+    },
+    neighborhood: {
+      type: String,
+      default: null,
+    },
+    city: {
+      type: String,
+      default: null,
+    },
+    state: {
+      type: String,
+      default: null,
+    },
+    zipCode: {
+      type: String,
+      default: null,
+    },
+    socialMedia: {
+      type: Object,
+      default: null,
+    },
+    businessLogo: {
+      type: String,
+      default: null,
+    },
     hoursOfOperation: {
       type: Array,
       default: [

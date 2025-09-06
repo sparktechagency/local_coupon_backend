@@ -50,13 +50,23 @@ const get_business_profile = async (
     hoursOfOperation: 1,
     company_picture: 1,
     phone: 1,
+    businessName: 1,
+    businessPhone: 1,
+    street: 1,
+    exteriorNumber: 1,
+    interiorNumber: 1,
+    neighborhood: 1,
+    city: 1,
+    state: 1,
+    zipCode: 1,
+    socialMedia: 1,
+    businessLogo: 1
   });
 
   const filters = {
     createdBy: business_profile_id,
   };
 
-  //pagination
   const pageNumber = parseInt(page as string) || 1;
   const limitNumber = parseInt(limit as string) || 10;
   const skip = (pageNumber - 1) * limitNumber;

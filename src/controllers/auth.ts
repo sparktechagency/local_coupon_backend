@@ -20,62 +20,145 @@ import { triggerNotification } from "@services/notificationService";
 import createResponseHandler from "@utils/response_handler";
 import uploadService from "@services/uploadService";
 
+// const signup = async (req: Request, response: Response) => {
+//   const res = createResponseHandler(response);
+//   const { name, email, phone, password, role, invite_id } = req?.body || {};
+//   const { id_proof, verification_document } =
+//     (req.files as {
+//       id_proof?: Express.Multer.File[];
+//       verification_document?: Express.Multer.File[];
+//     }) || {};
+
+//   if (role === "business" && !id_proof) {
+//     res.status(400).json({ message: "ID proof is required for business" });
+//     return;
+//   }
+
+//   if (role === "business" && !verification_document) {
+//     res
+//       .status(400)
+//       .json({ message: "Verification document is required for business" });
+//     return;
+//   }
+
+//   // if (role !== "user" && role !== "business") {
+//   //   res.status(400).json({ message: "Invalid role" });
+//   //   return;
+//   // }
+
+//   const error = validateRequiredFields({ name, email, phone, password });
+//   if (error) {
+//     res.status(400).json({ message: error });
+//     return;
+//   }
+
+//   const emailError = await checkUserExists("email", email);
+//   if (emailError) {
+//     res.status(400).json({ message: emailError });
+//     return;
+//   }
+
+//   const phoneError = await checkUserExists("phone", phone);
+//   if (phoneError) {
+//     res.status(400).json({ message: phoneError });
+//     return;
+//   }
+
+//   let id_url = null;
+//   let verification_url = null;
+
+//   if (role === "business") {
+//     if (id_proof) {
+//       id_url = await uploadService(id_proof?.[0], "image");
+//     }
+//     if (verification_document) {
+//       verification_url = await uploadService(
+//         verification_document?.[0],
+//         "image"
+//       );
+//     }
+//   }
+
+//   const passwordHash = await plainPasswordToHash(password);
+//   const newUser = await User.create({
+//     name,
+//     email,
+//     phone,
+//     passwordHash,
+//     role,
+//     id_url,
+//     verification_url,
+//   });
+//   // await sendOTP(email, "signup");
+//   const otp = await sendOTP(email, "signup");
+
+//   if (invite_id) {
+//     const invite_id_decoded = atob(invite_id);
+//     const oldUser = await User.findById(invite_id_decoded);
+//     await oldUser?.updateOne({
+//       $push: { invitedUsers: newUser._id },
+//     });
+//     if (oldUser && oldUser.invitedUsers.length % 10 === 0) {
+//       if (!oldUser.isSubscribed) {
+//         await oldUser?.updateOne({
+//           isSubscribed: true,
+//         });
+//       }
+//       await oldUser?.updateOne({
+//         subscriptionExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+//       });
+//     }
+//   }
+
+//   triggerNotification("SIGNUP", { email });
+
+//   res.status(200).json({ message: "OTP sent to email" });
+// };
+
 const signup = async (req: Request, response: Response) => {
   const res = createResponseHandler(response);
   const { name, email, phone, password, role, invite_id } = req?.body || {};
-  const { id_proof, verification_document } =
-    (req.files as {
-      id_proof?: Express.Multer.File[];
-      verification_document?: Express.Multer.File[];
-    }) || {};
+  const files = req.files as {
+    id_proof?: Express.Multer.File[];
+    verification_document?: Express.Multer.File[];
+  };
 
-  if (role === "business" && !id_proof) {
-    res.status(400).json({ message: "ID proof is required for business" });
-    return;
+  if (role === "business" && !files?.id_proof) {
+    return res.status(400).json({ message: "ID proof is required for business" });
   }
 
-  if (role === "business" && !verification_document) {
-    res
-      .status(400)
-      .json({ message: "Verification document is required for business" });
-    return;
+  if (role === "business" && !files?.verification_document) {
+    return res.status(400).json({ message: "Verification document is required for business" });
   }
-
-  // if (role !== "user" && role !== "business") {
-  //   res.status(400).json({ message: "Invalid role" });
-  //   return;
-  // }
 
   const error = validateRequiredFields({ name, email, phone, password });
   if (error) {
-    res.status(400).json({ message: error });
-    return;
+    return res.status(400).json({ message: error });
   }
 
   const emailError = await checkUserExists("email", email);
   if (emailError) {
-    res.status(400).json({ message: emailError });
-    return;
+    return res.status(400).json({ message: emailError });
   }
 
   const phoneError = await checkUserExists("phone", phone);
   if (phoneError) {
-    res.status(400).json({ message: phoneError });
-    return;
+    return res.status(400).json({ message: phoneError });
   }
 
-  let id_url = null;
-  let verification_url = null;
+  let id_url: string | null = null;
+  let verification_url: string | null = null;
 
   if (role === "business") {
-    if (id_proof) {
-      id_url = await uploadService(id_proof?.[0], "image");
-    }
-    if (verification_document) {
-      verification_url = await uploadService(
-        verification_document?.[0],
-        "image"
-      );
+    try {
+      if (files?.id_proof?.length) {
+        id_url = await uploadService(files.id_proof[0], "image");
+      }
+      if (files?.verification_document?.length) {
+        verification_url = await uploadService(files.verification_document[0], "image");
+      }
+    } catch (err: any) {
+      return res.status(500).json({ message: "File upload failed" });
     }
   }
 
@@ -89,30 +172,31 @@ const signup = async (req: Request, response: Response) => {
     id_url,
     verification_url,
   });
-  // await sendOTP(email, "signup");
+
   const otp = await sendOTP(email, "signup");
 
+  // Invite logic
   if (invite_id) {
     const invite_id_decoded = atob(invite_id);
     const oldUser = await User.findById(invite_id_decoded);
-    await oldUser?.updateOne({
-      $push: { invitedUsers: newUser._id },
-    });
-    if (oldUser && oldUser.invitedUsers.length % 10 === 0) {
-      if (!oldUser.isSubscribed) {
-        await oldUser?.updateOne({
-          isSubscribed: true,
+
+    if (oldUser) {
+      await oldUser.updateOne({ $push: { invitedUsers: newUser._id } });
+
+      if (oldUser.invitedUsers.length % 10 === 0) {
+        if (!oldUser.isSubscribed) {
+          await oldUser.updateOne({ isSubscribed: true });
+        }
+        await oldUser.updateOne({
+          subscriptionExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         });
       }
-      await oldUser?.updateOne({
-        subscriptionExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      });
     }
   }
 
   triggerNotification("SIGNUP", { email });
 
-  res.status(200).json({ message: "OTP sent to email" });
+  return res.status(200).json({ message: "OTP sent to email" });
 };
 
 const verify_otp = async (req: Request, response: Response) => {

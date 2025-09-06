@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { RequestHandler, Router } from "express";
 import {
   signup,
   verify_otp,
@@ -22,20 +22,10 @@ const upload = multer({
   dest: "uploads/",
 });
 
-router.post(
-  "/signup",
-  upload.fields([
-    {
-      name: "id_proof",
-      maxCount: 1,
-    },
-    {
-      name: "verification_document",
-      maxCount: 1,
-    },
-  ]),
-  signup
-);
+router.post("/signup", upload.fields([
+  { name: "id_proof", maxCount: 10 },
+  { name: "verification_document", maxCount: 10 },
+]), signup as RequestHandler);
 
 router.post("/verify-otp", verify_otp);
 router.get("/subscriptions_feature", authorize(["business", "user"]), subscriptionsFeature);
