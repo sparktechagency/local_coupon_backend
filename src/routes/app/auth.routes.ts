@@ -25,7 +25,7 @@ const upload = multer({
 router.post("/signup", upload.fields([
   { name: "id_proof", maxCount: 10 },
   { name: "verification_document", maxCount: 10 },
-  { name: 'businessLogo', maxCount: 1 }
+  { name: 'businessLogo', maxCount: 2 }
 ]), signup as RequestHandler);
 
 router.post("/verify-otp", verify_otp);
