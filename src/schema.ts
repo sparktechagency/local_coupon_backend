@@ -106,7 +106,7 @@ const User = new Schema(
       default: null,
     },
     businessLogo: {
-      type: String,
+      type: [String],
       default: null,
     },
     hoursOfOperation: {
