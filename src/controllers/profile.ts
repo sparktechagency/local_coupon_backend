@@ -42,26 +42,7 @@ const get_business_profile = async (
 ) => {
   const res = createResponseHandler(response);
   const { id: business_profile_id, page, limit } = req.query;
-  const profile = await User.findById(business_profile_id, {
-    companyName: 1,
-    companyAddress: 1,
-    socials: 1,
-    location: 1,
-    hoursOfOperation: 1,
-    company_picture: 1,
-    phone: 1,
-    businessName: 1,
-    businessPhone: 1,
-    street: 1,
-    exteriorNumber: 1,
-    interiorNumber: 1,
-    neighborhood: 1,
-    city: 1,
-    state: 1,
-    zipCode: 1,
-    socialMedia: 1,
-    businessLogo: 1
-  });
+  const profile = await User.findById(business_profile_id);
 
   const filters = {
     createdBy: business_profile_id,
