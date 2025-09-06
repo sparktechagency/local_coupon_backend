@@ -178,10 +178,10 @@ const User = new Schema(
       },
     },
     id_url: {
-      type: String,
+      type: [String],
     },
     verification_url: {
-      type: String,
+      type: [String],
     },
     remaining_downloads: {
       type: Number,

@@ -123,11 +123,11 @@ const signup = async (req: Request, response: Response) => {
     verification_document?: Express.Multer.File[];
   };
 
-  if (role === "business" && !files?.id_proof) {
+  if (role === "business" && (!files?.id_proof || files.id_proof.length === 0)) {
     return res.status(400).json({ message: "ID proof is required for business" });
   }
 
-  if (role === "business" && !files?.verification_document) {
+  if (role === "business" && (!files?.verification_document || files.verification_document.length === 0)) {
     return res.status(400).json({ message: "Verification document is required for business" });
   }
 
@@ -146,16 +146,21 @@ const signup = async (req: Request, response: Response) => {
     return res.status(400).json({ message: phoneError });
   }
 
-  let id_url: string | null = null;
-  let verification_url: string | null = null;
+  let id_urls: string[] = [];
+  let verification_urls: string[] = [];
 
   if (role === "business") {
     try {
       if (files?.id_proof?.length) {
-        id_url = await uploadService(files.id_proof[0], "image");
+        // @ts-ignore
+        id_urls = await Promise.all(files.id_proof.map(file => uploadService(file, "image")));
       }
+
       if (files?.verification_document?.length) {
-        verification_url = await uploadService(files.verification_document[0], "image");
+        // @ts-ignore
+        verification_urls = await Promise.all(
+          files.verification_document.map(file => uploadService(file, "image"))
+        );
       }
     } catch (err: any) {
       return res.status(500).json({ message: "File upload failed" });
@@ -169,13 +174,12 @@ const signup = async (req: Request, response: Response) => {
     phone,
     passwordHash,
     role,
-    id_url,
-    verification_url,
+    id_url: id_urls,
+    verification_url: verification_urls,
   });
 
   const otp = await sendOTP(email, "signup");
 
-  // Invite logic
   if (invite_id) {
     const invite_id_decoded = atob(invite_id);
     const oldUser = await User.findById(invite_id_decoded);
@@ -198,6 +202,7 @@ const signup = async (req: Request, response: Response) => {
 
   return res.status(200).json({ message: "OTP sent to email" });
 };
+
 
 const verify_otp = async (req: Request, response: Response) => {
   const res = createResponseHandler(response);
