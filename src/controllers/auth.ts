@@ -117,7 +117,8 @@ import uploadService from "@services/uploadService";
 
 const signup = async (req: Request, response: Response) => {
   const res = createResponseHandler(response);
-  const { name, email, phone, password, role, invite_id } = req?.body || {};
+  const { name, email, phone, password, role, invite_id, businessName, businessPhone, street, exteriorNumber, interiorNumber, neighborhood, city, state, zipCode, socialMedia,
+  } = req?.body || {};
   const files = req.files as {
     businessLogo?: Express.Multer.File[];
     id_proof?: Express.Multer.File[];
@@ -175,6 +176,16 @@ const signup = async (req: Request, response: Response) => {
     }
   }
 
+  let socialMediaParsed: Record<string, any> | null = null;
+  if (socialMedia) {
+    try {
+      socialMediaParsed = JSON.parse(socialMedia);
+    } catch (err) {
+      return res.status(400).json({ message: "Invalid socialMedia JSON format" });
+    }
+  }
+
+
   const passwordHash = await plainPasswordToHash(password);
   const newUser = await User.create({
     name,
@@ -185,6 +196,16 @@ const signup = async (req: Request, response: Response) => {
     id_url: id_urls,
     businessLogo,
     verification_url: verification_urls,
+    businessName,
+    businessPhone,
+    street,
+    exteriorNumber,
+    interiorNumber,
+    neighborhood,
+    city,
+    state,
+    zipCode,
+    socialMedia: socialMediaParsed,
   });
 
   const otp = await sendOTP(email, "signup");
