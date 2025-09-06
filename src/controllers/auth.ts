@@ -119,6 +119,7 @@ const signup = async (req: Request, response: Response) => {
   const res = createResponseHandler(response);
   const { name, email, phone, password, role, invite_id } = req?.body || {};
   const files = req.files as {
+    businessLogo?: Express.Multer.File[];
     id_proof?: Express.Multer.File[];
     verification_document?: Express.Multer.File[];
   };
@@ -148,9 +149,16 @@ const signup = async (req: Request, response: Response) => {
 
   let id_urls: string[] = [];
   let verification_urls: string[] = [];
+  let businessLogo: string[] = [];
 
   if (role === "business") {
     try {
+
+      if (files.businessLogo) {
+        // @ts-ignore
+        businessLogo = await Promise.all(files.businessLogo.map(file => uploadService(file, "image")));
+      }
+
       if (files?.id_proof?.length) {
         // @ts-ignore
         id_urls = await Promise.all(files.id_proof.map(file => uploadService(file, "image")));
@@ -175,6 +183,7 @@ const signup = async (req: Request, response: Response) => {
     passwordHash,
     role,
     id_url: id_urls,
+    businessLogo,
     verification_url: verification_urls,
   });
 
