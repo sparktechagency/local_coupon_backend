@@ -36,6 +36,7 @@ router.post(
   authorize(["user", "business", "admin"]),
   change_password
 );
+
 router.get("/invite", authorize(["user", "business", "admin"]), invite);
 
 export default router;
