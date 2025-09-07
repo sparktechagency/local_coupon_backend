@@ -8,7 +8,7 @@ import {
   update_profile,
 } from "@controllers/profile";
 import authorize from "@middleware/auth";
-import { Router } from "express";
+import { RequestHandler, Router } from "express";
 import multer from "multer";
 
 const router = Router();
@@ -23,9 +23,12 @@ router.put(
   upload.fields([
     { name: "picture", maxCount: 1 },
     { name: "company_picture", maxCount: 1 },
+    { name: "id_proof", maxCount: 10 },
+    { name: "verification_document", maxCount: 10 },
+    { name: 'businessLogo', maxCount: 2 }
   ]),
   authorize(["user", "business", "admin"]),
-  update_profile
+  update_profile as RequestHandler
 );
 router.delete("/", authorize(["user", "business", "admin"]), delete_profile);
 router.post(

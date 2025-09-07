@@ -144,10 +144,7 @@ const get_last_visits = async (
   }
 };
 
-const update_profile = async (
-  req: AuthenticatedRequest,
-  response: Response
-) => {
+const update_profile = async (req: AuthenticatedRequest, response: Response) => {
   const res = createResponseHandler(response);
   const {
     name,
@@ -161,27 +158,78 @@ const update_profile = async (
     phone,
     socials,
     coordinates,
+    businessName,
+    businessPhone,
+    street,
+    exteriorNumber,
+    interiorNumber,
+    neighborhood,
+    city,
+    state,
+    zipCode,
+    socialMedia,
   } = req.body;
 
   const user = await User.findById(req.user?.id);
   if (!user || user.isDeleted) {
-    res.status(404).json({ message: "User not found" });
-    return;
+    return res.status(404).json({ message: "User not found" });
   }
 
   if (user.emailVerified === false) {
-    res.status(403).json({
+    return res.status(403).json({
       message: "Please verify your email before updating your profile",
     });
-    return;
   }
 
-  const { picture, company_picture } =
-    (req.files as {
-      picture?: Express.Multer.File[];
-      company_picture?: Express.Multer.File[];
-    }) || {};
+  const files = (req.files as {
+    picture?: Express.Multer.File[];
+    company_picture?: Express.Multer.File[];
+    id_proof?: Express.Multer.File[];
+    verification_document?: Express.Multer.File[];
+    businessLogo?: Express.Multer.File[];
+  }) || {};
 
+  // If user role is business → handle extra uploads
+  if (req.user?.role === "business") {
+    try {
+      if (files.businessLogo?.length) {
+        const businessLogo = await Promise.all(
+          files.businessLogo.map((file) => uploadService(file, "image"))
+        );
+        // @ts-ignore
+        user.businessLogo = businessLogo;
+      }
+
+      if (files.id_proof?.length) {
+        const id_urls = await Promise.all(
+          files.id_proof.map((file) => uploadService(file, "image"))
+        );
+        // @ts-ignore
+        user.id_url = id_urls;
+      }
+
+      if (files.verification_document?.length) {
+        const verification_urls = await Promise.all(
+          files.verification_document.map((file) => uploadService(file, "image"))
+        );
+        // @ts-ignore
+        user.verification_url = verification_urls;
+      }
+    } catch (err: any) {
+      return res.status(500).json({ message: "File upload failed" });
+    }
+  }
+
+  // Parse social media JSON if provided
+  if (socialMedia) {
+    try {
+      user.socialMedia = JSON.parse(socialMedia);
+    } catch (err) {
+      return res.status(400).json({ message: "Invalid socialMedia JSON format" });
+    }
+  }
+
+  // Company & contact details
   if (companyName || companyAddress || socials || hoursOfOperation) {
     user.companyName = companyName || user.companyName;
     user.companyAddress = companyAddress || user.companyAddress;
@@ -190,63 +238,83 @@ const update_profile = async (
     user.phone = phone || user.phone;
 
     if (hoursOfOperation) {
-      // Check if hoursOfOperation is an array and has 7 elements
       const parsedHoursOfOperation = JSON.parse(hoursOfOperation);
       if (!Array.isArray(parsedHoursOfOperation)) {
-        res.status(400).json({
+        return res.status(400).json({
           message: "Hours of operation should be an array.",
         });
-        return;
       }
 
       const notValid = validateHoursOfOperation(parsedHoursOfOperation);
-
       if (notValid) {
-        res.status(400).json(notValid);
-        return;
+        return res.status(400).json(notValid);
       }
 
-      user.hoursOfOperation = parsedHoursOfOperation || user.hoursOfOperation;
+      user.hoursOfOperation = parsedHoursOfOperation;
     }
   }
 
+  // Basic profile info
   user.name = name || user.name;
   user.gender = gender || user.gender;
   user.location = location || user.location;
-  user.coordinates =
-    (coordinates && JSON.parse(coordinates)) || user.coordinates;
+  user.businessName = businessName || user.businessName;
+  user.businessPhone = businessPhone || user.businessPhone;
+  user.street = street || user.street;
+  user.exteriorNumber = exteriorNumber || user.exteriorNumber;
+  user.interiorNumber = interiorNumber || user.interiorNumber;
+  user.neighborhood = neighborhood || user.neighborhood;
+  user.city = city || user.city;
+  user.state = state || user.state;
+  user.zipCode = zipCode || user.zipCode;
 
+  // Coordinates
+  if (coordinates) {
+    try {
+      const parsedCoordinates = JSON.parse(coordinates);
+      user.coordinates = {
+        lat: parsedCoordinates.lat,
+        lng: parsedCoordinates.lng,
+      };
+    } catch (err) {
+      return res.status(400).json({ message: "Invalid coordinates JSON format" });
+    }
+  }
+
+  // Date of birth
   if (dateOfBirth) {
     const parsedDate = parseDate(dateOfBirth);
     if (!parsedDate) {
-      res.status(400).json({ message: "Invalid date of birth" });
-      return;
+      return res.status(400).json({ message: "Invalid date of birth" });
     }
     user.dateOfBirth = parsedDate;
   }
 
-  if (picture) {
-    const uploadedPicture = await uploadService(picture[0], "image");
+  // Profile picture
+  if (files.picture?.[0]) {
+    const uploadedPicture = await uploadService(files.picture[0], "image");
     if (!uploadedPicture) {
-      res.status(400).json({ message: "Failed to upload picture" });
-      return;
+      return res.status(400).json({ message: "Failed to upload picture" });
     }
     user.picture = uploadedPicture;
   }
 
-  if (company_picture) {
-    const uploadedPicture = await uploadService(company_picture[0], "image");
+  // Company picture
+  if (files.company_picture?.[0]) {
+    const uploadedPicture = await uploadService(
+      files.company_picture[0],
+      "image"
+    );
     if (!uploadedPicture) {
-      res.status(400).json({ message: "Failed to upload picture" });
-      return;
+      return res.status(400).json({ message: "Failed to upload picture" });
     }
     user.company_picture = uploadedPicture;
   }
 
   await user.save();
-
-  res.status(200).json({ message: "Profile updated successfully" });
+  return res.status(200).json({ message: "Profile updated successfully" });
 };
+
 
 const delete_profile = async (
   req: AuthenticatedRequest,
