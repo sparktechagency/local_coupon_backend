@@ -125,13 +125,13 @@ const signup = async (req: Request, response: Response) => {
     verification_document?: Express.Multer.File[];
   };
 
-  if (role === "business" && (!files?.id_proof || files.id_proof.length === 0)) {
-    return res.status(400).json({ message: "ID proof is required for business" });
-  }
+  // if (role === "business" && (!files?.id_proof || files.id_proof.length === 0)) {
+  //   return res.status(400).json({ message: "ID proof is required for business" });
+  // }
 
-  if (role === "business" && (!files?.verification_document || files.verification_document.length === 0)) {
-    return res.status(400).json({ message: "Verification document is required for business" });
-  }
+  // if (role === "business" && (!files?.verification_document || files.verification_document.length === 0)) {
+  //   return res.status(400).json({ message: "Verification document is required for business" });
+  // }
 
   const error = validateRequiredFields({ name, email, phone, password });
   if (error) {
