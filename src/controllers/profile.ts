@@ -269,6 +269,7 @@ const update_profile = async (req: AuthenticatedRequest, response: Response) => 
 
   if (hoursOfOperation !== undefined) {
     if (hoursOfOperation === "") {
+      // @ts-ignore
       user.hoursOfOperation = undefined;
     } else {
       try {
@@ -329,6 +330,7 @@ const update_profile = async (req: AuthenticatedRequest, response: Response) => 
   // Date of birth
   if (dateOfBirth !== undefined) {
     if (dateOfBirth === "") {
+      // @ts-ignore
       user.dateOfBirth = undefined;
     } else {
       const parsedDate = parseDate(dateOfBirth);
