@@ -146,6 +146,17 @@ const get_last_visits = async (
 
 const update_profile = async (req: AuthenticatedRequest, response: Response) => {
   const res = createResponseHandler(response);
+
+  // Helper to handle update logic
+  function assignOrClear(target: any, key: string, value: any) {
+    if (value === undefined) return; // keep old data
+    if (typeof value === "string" && value.trim() === "") {
+      target[key] = undefined; // clear
+    } else {
+      target[key] = value; // set new value
+    }
+  }
+
   const {
     name,
     dateOfBirth,
@@ -181,13 +192,14 @@ const update_profile = async (req: AuthenticatedRequest, response: Response) => 
     });
   }
 
-  const files = (req.files as {
-    picture?: Express.Multer.File[];
-    company_picture?: Express.Multer.File[];
-    id_proof?: Express.Multer.File[];
-    verification_document?: Express.Multer.File[];
-    businessLogo?: Express.Multer.File[];
-  }) || {};
+  const files =
+    (req.files as {
+      picture?: Express.Multer.File[];
+      company_picture?: Express.Multer.File[];
+      id_proof?: Express.Multer.File[];
+      verification_document?: Express.Multer.File[];
+      businessLogo?: Express.Multer.File[];
+    }) || {};
 
   // If user role is business → handle extra uploads
   if (req.user?.role === "business") {
@@ -221,73 +233,110 @@ const update_profile = async (req: AuthenticatedRequest, response: Response) => 
   }
 
   // Parse social media JSON if provided
-  if (socialMedia) {
-    try {
-      user.socialMedia = JSON.parse(socialMedia);
-    } catch (err) {
-      return res.status(400).json({ message: "Invalid socialMedia JSON format" });
+  if (socialMedia !== undefined) {
+    if (socialMedia === "") {
+      user.socialMedia = undefined; // clear
+    } else {
+      try {
+        user.socialMedia = JSON.parse(socialMedia);
+      } catch (err) {
+        return res
+          .status(400)
+          .json({ message: "Invalid socialMedia JSON format" });
+      }
     }
   }
 
   // Company & contact details
-  if (companyName || companyAddress || socials || hoursOfOperation) {
-    user.companyName = companyName || user.companyName;
-    user.companyAddress = companyAddress || user.companyAddress;
-    user.socials = (socials && JSON.parse(socials)) || user.socials;
-    user.countryDialCode = countryDialCode || user.countryDialCode;
-    user.phone = phone || user.phone;
+  assignOrClear(user, "companyName", companyName);
+  assignOrClear(user, "companyAddress", companyAddress);
+  assignOrClear(user, "countryDialCode", countryDialCode);
+  assignOrClear(user, "phone", phone);
 
-    if (hoursOfOperation) {
-      const parsedHoursOfOperation = JSON.parse(hoursOfOperation);
-      if (!Array.isArray(parsedHoursOfOperation)) {
-        return res.status(400).json({
-          message: "Hours of operation should be an array.",
-        });
+  if (socials !== undefined) {
+    if (socials === "") {
+      user.socials = undefined;
+    } else {
+      try {
+        user.socials = JSON.parse(socials);
+      } catch (err) {
+        return res
+          .status(400)
+          .json({ message: "Invalid socials JSON format" });
       }
+    }
+  }
 
-      const notValid = validateHoursOfOperation(parsedHoursOfOperation);
-      if (notValid) {
-        return res.status(400).json(notValid);
+  if (hoursOfOperation !== undefined) {
+    if (hoursOfOperation === "") {
+      user.hoursOfOperation = undefined;
+    } else {
+      try {
+        const parsedHoursOfOperation = JSON.parse(hoursOfOperation);
+        if (!Array.isArray(parsedHoursOfOperation)) {
+          return res
+            .status(400)
+            .json({ message: "Hours of operation should be an array." });
+        }
+
+        const notValid = validateHoursOfOperation(parsedHoursOfOperation);
+        if (notValid) {
+          return res.status(400).json(notValid);
+        }
+
+        user.hoursOfOperation = parsedHoursOfOperation;
+      } catch (err) {
+        return res
+          .status(400)
+          .json({ message: "Invalid hoursOfOperation JSON format" });
       }
-
-      user.hoursOfOperation = parsedHoursOfOperation;
     }
   }
 
   // Basic profile info
-  user.name = name || user.name;
-  user.gender = gender || user.gender;
-  user.location = location || user.location;
-  user.businessName = businessName || user.businessName;
-  user.businessPhone = businessPhone || user.businessPhone;
-  user.street = street || user.street;
-  user.exteriorNumber = exteriorNumber || user.exteriorNumber;
-  user.interiorNumber = interiorNumber || user.interiorNumber;
-  user.neighborhood = neighborhood || user.neighborhood;
-  user.city = city || user.city;
-  user.state = state || user.state;
-  user.zipCode = zipCode || user.zipCode;
+  assignOrClear(user, "name", name);
+  assignOrClear(user, "gender", gender);
+  assignOrClear(user, "location", location);
+  assignOrClear(user, "businessName", businessName);
+  assignOrClear(user, "businessPhone", businessPhone);
+  assignOrClear(user, "street", street);
+  assignOrClear(user, "exteriorNumber", exteriorNumber);
+  assignOrClear(user, "interiorNumber", interiorNumber);
+  assignOrClear(user, "neighborhood", neighborhood);
+  assignOrClear(user, "city", city);
+  assignOrClear(user, "state", state);
+  assignOrClear(user, "zipCode", zipCode);
 
   // Coordinates
-  if (coordinates) {
-    try {
-      const parsedCoordinates = JSON.parse(coordinates);
-      user.coordinates = {
-        lat: parsedCoordinates.lat,
-        lng: parsedCoordinates.lng,
-      };
-    } catch (err) {
-      return res.status(400).json({ message: "Invalid coordinates JSON format" });
+  if (coordinates !== undefined) {
+    if (coordinates === "") {
+      user.coordinates = undefined;
+    } else {
+      try {
+        const parsedCoordinates = JSON.parse(coordinates);
+        user.coordinates = {
+          lat: parsedCoordinates.lat,
+          lng: parsedCoordinates.lng,
+        };
+      } catch (err) {
+        return res
+          .status(400)
+          .json({ message: "Invalid coordinates JSON format" });
+      }
     }
   }
 
   // Date of birth
-  if (dateOfBirth) {
-    const parsedDate = parseDate(dateOfBirth);
-    if (!parsedDate) {
-      return res.status(400).json({ message: "Invalid date of birth" });
+  if (dateOfBirth !== undefined) {
+    if (dateOfBirth === "") {
+      user.dateOfBirth = undefined;
+    } else {
+      const parsedDate = parseDate(dateOfBirth);
+      if (!parsedDate) {
+        return res.status(400).json({ message: "Invalid date of birth" });
+      }
+      user.dateOfBirth = parsedDate;
     }
-    user.dateOfBirth = parsedDate;
   }
 
   // Profile picture
@@ -314,6 +363,7 @@ const update_profile = async (req: AuthenticatedRequest, response: Response) => 
   await user.save();
   return res.status(200).json({ message: "Profile updated successfully" });
 };
+
 
 
 const delete_profile = async (
