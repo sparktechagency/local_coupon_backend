@@ -369,6 +369,12 @@ const Coupon = new Schema(
     promo_title: {
       type: String,
     },
+    promo_title_fr: {
+      type: String,
+    },
+    promo_title_sp: {
+      type: String,
+    },
     regular_amount: {
       type: Number,
     },

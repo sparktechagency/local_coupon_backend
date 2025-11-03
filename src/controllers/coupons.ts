@@ -161,6 +161,8 @@ const add_coupon = async (req: AuthenticatedRequest, response: Response) => {
     promo_title,
     regular_amount,
     discount_amount,
+    promo_title_fr,
+    promo_title_sp,
     mxn_amount,
     more_details,
     start,
@@ -232,6 +234,8 @@ const add_coupon = async (req: AuthenticatedRequest, response: Response) => {
       more_details,
       start: startDate,
       end: endDate,
+      promo_title_fr,
+      promo_title_sp,
       add_to_carousel,
       photo_url,
       carousel_photo_url,
@@ -266,6 +270,8 @@ const update_coupon = async (req: AuthenticatedRequest, response: Response) => {
     discount_percentage,
     promo_title,
     regular_amount,
+    promo_title_fr,
+    promo_title_sp,
     discount_amount,
     mxn_amount,
     more_details,
@@ -340,6 +346,10 @@ const update_coupon = async (req: AuthenticatedRequest, response: Response) => {
       ...(endDate && { end: endDate }),
       ...(add_to_carousel && { add_to_carousel }),
       ...(photo_url && { photo_url }),
+
+      ...(promo_title_fr && { promo_title_fr }),
+      ...(promo_title_sp && { promo_title_sp }),
+
       ...(discount_percentage && {
         discount_percentage: Number(discount_percentage),
       }),

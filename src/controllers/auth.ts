@@ -133,7 +133,7 @@ const signup = async (req: Request, response: Response) => {
   //   return res.status(400).json({ message: "Verification document is required for business" });
   // }
 
-  const error = validateRequiredFields({ name, email, phone, password });
+  const error = validateRequiredFields({ name, email, password });
   if (error) {
     return res.status(400).json({ message: error });
   }
@@ -143,10 +143,14 @@ const signup = async (req: Request, response: Response) => {
     return res.status(400).json({ message: emailError });
   }
 
-  const phoneError = await checkUserExists("phone", phone);
-  if (phoneError) {
-    return res.status(400).json({ message: phoneError });
+
+  if (phone) {
+    const phoneError = await checkUserExists("phone", phone);
+    if (phoneError) {
+      return res.status(400).json({ message: phoneError });
+    }
   }
+
 
   let id_urls: string[] = [];
   let verification_urls: string[] = [];
